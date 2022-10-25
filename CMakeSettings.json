@@ -1,0 +1,63 @@
+﻿{
+  "configurations": [
+    {
+      "name": "x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "Geant4_DIR",
+          "value": "C:\\Program Files\\Geant4-11.0\\lib\\Geant4-11.0.3",
+          "type": "PATH"
+        },
+        {
+          "name": "PTL_DIR",
+          "value": "C:\\Program Files\\Geant4-11.0\\lib\\Geant4-11.0.3\\PTL",
+          "type": "PATH"
+        }
+      ]
+    },
+    {
+      "name": "x86-Debug",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "variables": [
+        {
+          "name": "Geant4_DIR",
+          "value": "C:/Program Files (x86)/Geant4 10.5/lib/Geant4-10.5.1",
+          "type": "PATH"
+        }
+      ]
+    },
+    {
+      "name": "x86-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "variables": [
+        {
+          "name": "Geant4_DIR",
+          "value": "C:/Program Files (x86)/Geant4 10.5/lib/Geant4-10.5.1",
+          "type": "PATH"
+        }
+      ]
+    }
+  ]
+}
