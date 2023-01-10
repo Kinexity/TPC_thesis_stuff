@@ -18,7 +18,7 @@
 //
 /////////////////////////////////////////////////////////////////
 //
-//  Modified: 16-01-2013 A. Algora to run with the newer versions
+//  2022 V. Guadilla
 //
 //  To run simple OTPC simulations
 //
@@ -51,20 +51,13 @@
 #include "G4ios.hh"
 #include <fstream>
 #include <iomanip>
-#include <filesystem>
-#include <conio.h>
+
 
 
 //using namespace std;
 
 int main(int argc, char** argv)
 {
-	// Create results directory
-
-	//if (std::filesystem::exists("~/results_TPC")) {
-	//
-	//}
-
 	// Choose the random engine and initialize
 	CLHEP::HepRandom::setTheEngine(new CLHEP::RanluxEngine);
 
@@ -80,7 +73,12 @@ int main(int argc, char** argv)
 	system("set G4RADIOACTIVEDATA");
 	_putenv_s("G4LEDATA", "C:\\Program Files (x86)\\Geant4 10.5\\data\\G4EMLOW7.7");
 	system("set G4LEDATA");
-	// construct the default run manager
+
+	//   // open efficiency file
+	//   ofstream efficiencyOutputFile("OTPC.eff");
+	//   efficiencyOutputFile << " Efficiency for OTPC runs" << G4endl;
+
+	  // construct the default run manager
 	G4RunManager* runManager = new G4RunManager;
 
 	// set mandatory initialization classes
@@ -92,7 +90,8 @@ int main(int argc, char** argv)
 	runManager->SetUserAction(OTPCrun);
 	OTPCEventAction* OTPCevent = new OTPCEventAction(OTPCrun);
 	runManager->SetUserAction(OTPCevent);
-	OTPCSteppingAction* OTPCstep = new OTPCSteppingAction(OTPCevent);
+	OTPCSteppingAction* OTPCstep =
+		new OTPCSteppingAction(OTPCevent);
 	runManager->SetUserAction(OTPCstep);
 
 	// set mandatory user action class
@@ -115,12 +114,30 @@ int main(int argc, char** argv)
 	visManager->Initialize();
 #endif
 
+	//get the pointer to the User Interface manager
+	G4UImanager* UI = G4UImanager::GetUIpointer();
 
+	G4UIsession* session = 0;
 
-	// start a run
+	if (argc == 1)
+	{
+		// define UI terminal for interactive mode
+#ifdef G4UI_USE_TCSH
+		session = new G4UIterminal(new G4UItcsh);
+#else
+		session = new G4UIterminal();
+#endif
 
-	G4int numberOfEvent = 1;
-	runManager->BeamOn(numberOfEvent);
+		session->SessionStart();
+		delete session;
+	}
+	else
+		// Batch mode
+	{
+		G4String command = "/control/execute ";
+		G4String fileName = argv[1];
+		UI->ApplyCommand(command + fileName);
+	}
 
 	// job termination
 #ifdef G4VIS_USE

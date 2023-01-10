@@ -142,7 +142,19 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 
 	//F
 	a = 18.998 * g / mole;
-	G4Element* F = new G4Element("Fluorine", "F", z = 9., a);
+	G4Element* F = new G4Element(name = "Fluorine", "F", z = 9., a);
+
+	// Na
+	a = 22.989770 * g / mole;
+	G4Element* Na = new G4Element(name = "Sodium", "Na", 11, a);
+
+	// Mg
+	a = 24.3050 * g / mole;
+	G4Element* Mg = new G4Element(name = "Magnesium", "Mg", 12, a);
+
+	// Ca
+	a = 40.078 * g / mole;
+	G4Element* Ca = new G4Element(name = "Calcium", "Ca", 20, a);
 
 
 	// N
@@ -343,6 +355,69 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	G4Material* CF4 = new G4Material(name = "CF4", density, ncomponents = 2, kStateGas, 296.15 * kelvin, 1 * atmosphere);
 	CF4->AddElement(C, 1);
 	CF4->AddElement(F, 4);
+
+
+	// Define the SiO2 compound
+	density = 2.65 * g / cm3;
+	G4Material* SiO2 = new G4Material(name = "SiO2", density, ncomponents = 2);
+	SiO2->AddElement(Si, 1);
+	SiO2->AddElement(O, 2);
+
+	// Define the Al2O3 compound
+	density = 3.987 * g / cm3;
+	G4Material* Al2O3 = new G4Material(name = "Al2O3", density, ncomponents = 2);
+	Al2O3->AddElement(Al, 2);
+	Al2O3->AddElement(O, 3);
+
+	// Define the TiO2 compound
+	density = 4.26 * g / cm3;
+	G4Material* TiO2 = new G4Material(name = "TiO2", density, ncomponents = 2);
+	TiO2->AddElement(Ti, 1);
+	TiO2->AddElement(O, 2);
+
+	// Define the B2O3 compound
+	density = 2.55 * g / cm3;
+	G4Material* B2O3 = new G4Material(name = "B2O3", density, ncomponents = 2);
+	B2O3->AddElement(B, 2);
+	B2O3->AddElement(O, 3);
+
+	// Define the CaO compound
+	density = 3.34 * g / cm3;
+	G4Material* CaO = new G4Material(name = "CaO", density, ncomponents = 2);
+	CaO->AddElement(Ca, 1);
+	CaO->AddElement(O, 1);
+
+	// Define the MgO compound
+	density = 3.58 * g / cm3;
+	G4Material* MgO = new G4Material(name = "MgO", density, ncomponents = 2);
+	MgO->AddElement(Mg, 1);
+	MgO->AddElement(O, 1);
+
+	// Define the Na2O compound
+	density = 2.27 * g / cm3;
+	G4Material* Na2O = new G4Material(name = "Na2O", density, ncomponents = 2);
+	Na2O->AddElement(Na, 2);
+	Na2O->AddElement(O, 1);
+
+	// Define the K2O compound
+	density = 2.35 * g / cm3;
+	G4Material* K2O = new G4Material(name = "K2O", density, ncomponents = 2);
+	K2O->AddElement(K, 2);
+	K2O->AddElement(O, 1);
+
+
+	//fibreglass reinforced epoxy (Stesalit)
+	density = 1.85 * g / cm3;
+	G4Material* Stesalit = new G4Material(name = "Stesalit", density, ncomponents = 9); 
+	Stesalit->AddMaterial(SiO2, 55.0 * perCent);
+	Stesalit->AddMaterial(Al2O3, 14.0 * perCent);
+	Stesalit->AddMaterial(TiO2, 0.2 * perCent);
+	Stesalit->AddMaterial(B2O3, 7.0 * perCent);
+	Stesalit->AddMaterial(CaO, 22.0 * perCent);
+	Stesalit->AddMaterial(MgO, 1.0 * perCent);
+	Stesalit->AddMaterial(Na2O, 0.5 * perCent);
+	Stesalit->AddMaterial(K2O, 0.3 * perCent);
+	Stesalit->AddMaterial(Fe2O3, 0.3 * perCent);
 
 
 	// GAS OTPC 

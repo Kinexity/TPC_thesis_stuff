@@ -34,6 +34,8 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #
 add_executable(OTPC OTPC.cc ${sources} ${headers})
 target_link_libraries(OTPC ${Geant4_LIBRARIES})
+add_executable(OTPC_manual OTPC_manual.cc ${sources} ${headers})
+target_link_libraries(OTPC_manual ${Geant4_LIBRARIES})
 
 
 

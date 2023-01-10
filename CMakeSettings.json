@@ -38,6 +38,11 @@
           "name": "Geant4_DIR",
           "value": "C:/Program Files (x86)/Geant4 10.5/lib/Geant4-10.5.1",
           "type": "PATH"
+        },
+        {
+          "name": "CMAKE_CXX_FLAGS",
+          "value": "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /std:c++17",
+          "type": "STRING"
         }
       ]
     },
@@ -55,6 +60,29 @@
         {
           "name": "Geant4_DIR",
           "value": "C:/Program Files (x86)/Geant4 10.5/lib/Geant4-10.5.1",
+          "type": "PATH"
+        }
+      ]
+    },
+    {
+      "name": "x64-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "variables": [
+        {
+          "name": "Geant4_DIR",
+          "value": "C:\\Users\\26kub\\source\\libs\\geant4_10_05_p01\\out\\build\\x64-Release\\BuildProducts\\lib",
+          "type": "PATH"
+        },
+        {
+          "name": "PTL_DIR",
+          "value": "",
           "type": "PATH"
         }
       ]
