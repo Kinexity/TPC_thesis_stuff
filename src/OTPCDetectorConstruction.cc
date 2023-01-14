@@ -408,7 +408,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 
 	//fibreglass reinforced epoxy (Stesalit)
 	density = 1.85 * g / cm3;
-	G4Material* Stesalit = new G4Material(name = "Stesalit", density, ncomponents = 9); 
+	G4Material* Stesalit = new G4Material(name = "Stesalit", density, ncomponents = 8);
 	Stesalit->AddMaterial(SiO2, 55.0 * perCent);
 	Stesalit->AddMaterial(Al2O3, 14.0 * perCent);
 	Stesalit->AddMaterial(TiO2, 0.2 * perCent);
@@ -417,7 +417,6 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	Stesalit->AddMaterial(MgO, 1.0 * perCent);
 	Stesalit->AddMaterial(Na2O, 0.5 * perCent);
 	Stesalit->AddMaterial(K2O, 0.3 * perCent);
-	Stesalit->AddMaterial(Fe2O3, 0.3 * perCent);
 
 
 	// GAS OTPC 
@@ -538,6 +537,51 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
    /// World
    //
 
+	//G4double WorldSize = 100. * cm;
+	//
+	//G4Box* solidWorld = new G4Box("World", WorldSize / 2, WorldSize / 2, WorldSize / 2);
+	//G4LogicalVolume* logicWorld = new G4LogicalVolume(solidWorld, Vacuum, "World");  //VACUUM
+	////G4LogicalVolume* logicWorld = new G4LogicalVolume(solidWorld,Air,"World");       //AIR
+	//G4VPhysicalVolume* physiWorld = new G4PVPlacement(0, G4ThreeVector(), "World", logicWorld, NULL, false, 0);
+	//
+	//// OTPC active volume:
+	//
+	//G4double half_x_OTPC = 16.128 * cm;
+	//G4double half_y_OTPC = 16.128 * cm;
+	//G4double half_z_OTPC = 7.1 * cm;
+	//
+	//G4Box* solidOTPC = new G4Box("OTPC", half_x_OTPC, half_y_OTPC, half_z_OTPC);
+	//G4LogicalVolume* OTPCLogicalVolume = new G4LogicalVolume(solidOTPC, GasOTPC, "OTPCLogicalVolume");
+	//G4ThreeVector OTPC_position = G4ThreeVector(0. * cm, 0. * cm, 0. * mm);
+	//G4VPhysicalVolume* physiOTPC = new G4PVPlacement(0, OTPC_position, "OTPC", OTPCLogicalVolume, physiWorld, false, 0);
+
+	// Define the dimensions of the active volume
+	G4double activeVolumeX = 20 * cm;
+	G4double activeVolumeY = 33 * cm;
+	G4double activeVolumeZ = 21 * cm;
+
+	// Define the dimensions of the external volume
+	G4double externalVolumeX = 22.2 * cm;
+	G4double externalVolumeY = 34.2 * cm;
+	G4double externalVolumeZ = 22 * cm;
+
+	// Create a solid volume for the active volume
+	G4Box* activeVolumeSolid = new G4Box("activeVolumeSolid", activeVolumeX / 2, activeVolumeY / 2, activeVolumeZ / 2);
+
+	// Create a solid volume for the external volume
+	G4Box* externalVolumeSolid = new G4Box("externalVolumeSolid", externalVolumeX / 2, externalVolumeY / 2, externalVolumeZ / 2);
+
+	//G4ThreeVector activeVolumeShift = G4ThreeVector(externalVolumeX - activeVolumeX, externalVolumeY - activeVolumeY, externalVolumeZ - activeVolumeZ) / 2;
+
+	// Subtract the active volume from the external volume to create detector walls
+	G4SubtractionSolid* wallsSolid = new G4SubtractionSolid("wallsSolid", externalVolumeSolid, activeVolumeSolid /*, 0, activeVolumeShift*/);
+
+	// Assign the Stesalit material to the walls of the detector
+	G4LogicalVolume* wallsLogical = new G4LogicalVolume(wallsSolid, Stesalit, "wallsLogical");
+
+	// Assign the GasOTPC to the active volume of the detector
+	G4LogicalVolume* activeVolumeLogical = new G4LogicalVolume(activeVolumeSolid, GasOTPC, "wallsLogical");
+
 	G4double WorldSize = 100. * cm;
 
 	G4Box* solidWorld = new G4Box("World", WorldSize / 2, WorldSize / 2, WorldSize / 2);
@@ -545,16 +589,12 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	//G4LogicalVolume* logicWorld = new G4LogicalVolume(solidWorld,Air,"World");       //AIR
 	G4VPhysicalVolume* physiWorld = new G4PVPlacement(0, G4ThreeVector(), "World", logicWorld, NULL, false, 0);
 
-	// OTPC active volume:
-
-	G4double half_x_OTPC = 16.128 * cm;
-	G4double half_y_OTPC = 16.128 * cm;
-	G4double half_z_OTPC = 7.1 * cm;
-
-	G4Box* solidOTPC = new G4Box("OTPC", half_x_OTPC, half_y_OTPC, half_z_OTPC);
-	G4LogicalVolume* OTPCLogicalVolume = new G4LogicalVolume(solidOTPC, GasOTPC, "OTPCLogicalVolume");
 	G4ThreeVector OTPC_position = G4ThreeVector(0. * cm, 0. * cm, 0. * mm);
-	G4VPhysicalVolume* physiOTPC = new G4PVPlacement(0, OTPC_position, "OTPC", OTPCLogicalVolume, physiWorld, false, 0);
+
+	G4VPhysicalVolume* physiOTPC = new G4PVPlacement(0, OTPC_position, "OTPC_activeVolume", activeVolumeLogical, physiWorld, false, 0);
+	G4VPhysicalVolume* physiWallsOTPC = new G4PVPlacement(0, OTPC_position, "OTPC_walls", wallsLogical, physiWorld, false, 0);
+
+
 
 	// Construct the field creator - this will register the field it creates
 	F02ElectricFieldSetup* fieldSetup = new F02ElectricFieldSetup();
@@ -591,7 +631,8 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	G4VisAttributes* Att10 = new G4VisAttributes(G4Colour(0.5, 1.0, 0.0));
 
 	//OTPCLogicalVolume->SetVisAttributes(Att9);
-	OTPCLogicalVolume->SetVisAttributes(G4VisAttributes::GetInvisible());
+	//OTPCLogicalVolume->SetVisAttributes(G4VisAttributes::GetInvisible());
+	activeVolumeLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
 
 	//
 	// always return the physical World

@@ -52,6 +52,7 @@
 #include <fstream>
 #include <iomanip>
 #include <filesystem>
+#include <memory>
 #include <conio.h>
 
 
@@ -81,7 +82,7 @@ int main(int argc, char** argv)
 	_putenv_s("G4LEDATA", "C:\\Program Files (x86)\\Geant4 10.5\\data\\G4EMLOW7.7");
 	system("set G4LEDATA");
 	// construct the default run manager
-	G4RunManager* runManager = new G4RunManager;
+	std::unique_ptr<G4RunManager> runManager = std::make_unique<G4RunManager>();
 
 	// set mandatory initialization classes
 	runManager->SetUserInitialization(new OTPCDetectorConstruction);
@@ -111,7 +112,7 @@ int main(int argc, char** argv)
 	// Visualization, if you choose to have it!
 #ifdef G4VIS_USE
 //   G4VisManager* visManager = new OTPCVisManager;
-	G4VisManager* visManager = new G4VisExecutive;
+	std::unique_ptr<G4VisManager> visManager = std::make_unique<G4VisExecutive>();
 	visManager->Initialize();
 #endif
 
@@ -123,10 +124,6 @@ int main(int argc, char** argv)
 	runManager->BeamOn(numberOfEvent);
 
 	// job termination
-#ifdef G4VIS_USE
-	delete visManager;
-#endif
-	delete runManager;
 	return 0;
 }
 
