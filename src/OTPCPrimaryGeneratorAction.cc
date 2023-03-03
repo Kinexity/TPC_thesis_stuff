@@ -11,6 +11,7 @@
 #include "G4ParticleDefinition.hh"
 #include "G4GeneralParticleSource.hh" 
 #include "G4IonTable.hh"
+#include "G4RandomDirection.hh"
 
 #include "G4ThreeVector.hh"
 #include "globals.hh"
@@ -19,6 +20,7 @@
 #include "G4ios.hh"
 #include "fstream"
 #include "iomanip"
+#include <cstdlib>
 
 #include "G4SystemOfUnits.hh"
 
@@ -44,6 +46,7 @@ OTPCPrimaryGeneratorAction::OTPCPrimaryGeneratorAction(OTPCRunAction* RunAct)
 	// particle type
 	particleGun->SetParticleDefinition(particleTable->FindParticle(particleName = "geantino"));
 	particleGun->SetParticleEnergy(1.0 * GeV);
+	particleGun->SetParticleMomentumDirection(G4RandomDirection());
 
 
 	/// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,6 +85,7 @@ void OTPCPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 	particleGun->SetParticleDefinition(particleTable->FindParticle(particleName = "geantino"));
 	particleGun->SetParticleEnergy(1.0 * GeV);
+	particleGun->SetParticleMomentumDirection(G4RandomDirection());
 
 	particleGun->GeneratePrimaryVertex(anEvent);
 

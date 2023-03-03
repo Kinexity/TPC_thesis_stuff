@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 	G4long Seed = 2193585;
 	G4int Lux = 3;
 	CLHEP::HepRandom::setTheSeed(Seed, Lux);
-
+	std::cout << "Test\n";
 	_putenv_s("G4ENSDFSTATEDATA", "C:\\Program Files (x86)\\Geant4 10.5\\data\\G4ENSDFSTATE2.2");
 	system("set G4ENSDFSTATEDATA");
 	_putenv_s("G4LEVELGAMMADATA", "C:\\Program Files(x86)\\Geant4 10.5\\data\\PhotonEvaporation5.3");

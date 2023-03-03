@@ -156,6 +156,13 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	a = 40.078 * g / mole;
 	G4Element* Ca = new G4Element(name = "Calcium", "Ca", 20, a);
 
+	// Ce
+	a = 132.91 * g / mole;
+	G4Element* Ce = new G4Element(name = "Cerium", "Ce", 58, a);
+
+	// Br
+	a = 79.904 * g / mole;
+	G4Element* Br = new G4Element(name = "Bromine", "Br", 35, a);
 
 	// N
 	G4Isotope* N14 = new G4Isotope("14N", 7, 14, 14.003 * g / mole);
@@ -418,6 +425,17 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	Stesalit->AddMaterial(Na2O, 0.5 * perCent);
 	Stesalit->AddMaterial(K2O, 0.3 * perCent);
 
+	// PTFE
+	density = 2.0 * g / cm3;
+	G4Material* PTFE = new G4Material(name = "PTFE", density, ncomponents = 2);
+	PTFE->AddElement(C, natoms = 2);
+	PTFE->AddElement(F, natoms = 4);
+
+	// CeBr3
+	density = 5.1 * g / cm3;
+	G4Material* CeBr3 = new G4Material(name = "CeBr3", density, ncomponents = 2);
+	CeBr3->AddElement(Ce, natoms = 1);
+	CeBr3->AddElement(Br, natoms = 3);
 
 	// GAS OTPC 
 	//////////Reading the input data for primary generator///////////
@@ -565,8 +583,28 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	G4double externalVolumeY = 34.2 * cm;
 	G4double externalVolumeZ = 22 * cm;
 
+	//Electrode dimensions
+	G4double electrodeThickness = 3 * mm; //thickness is counted in Z axis
+	G4double electrodeSpacing = 7 * mm; //space between electrodes
+	G4double electrodeWidth = 6 * mm; //from the walls
+
+	// Create a solid volume for the one electrode plane volume
+	G4Box* oneElectrodePlaneVolumeSolid = new G4Box("oneElectrodePlaneVolumeSolid", activeVolumeX / 2, activeVolumeY / 2, electrodeThickness / 2);
+
+	// Create a solid volume for the one electrode inner volume
+	G4Box* oneElectrodePlaneInternalVolumeSolid = new G4Box("oneElectrodePlaneInternalVolumeSolid", activeVolumeX / 2 - electrodeWidth, activeVolumeY / 2 - electrodeWidth, electrodeThickness / 2);
+
+	// Create a solid volume for the one electrode volume
+	G4SubtractionSolid* oneElectrodeSolid = new G4SubtractionSolid("oneElectrodeSolid", oneElectrodePlaneVolumeSolid, oneElectrodePlaneInternalVolumeSolid /*, 0, activeVolumeShift*/);
+
+	// Assign the Stesalit material to the walls of the detector
+	G4LogicalVolume* oneElectrodeLogical = new G4LogicalVolume(oneElectrodeSolid, Copper, "oneElectrodeLogical");
+
 	// Create a solid volume for the active volume
 	G4Box* activeVolumeSolid = new G4Box("activeVolumeSolid", activeVolumeX / 2, activeVolumeY / 2, activeVolumeZ / 2);
+
+	// Create a solid volume for the active volume
+	//G4SubtractionSolid* activeVolumeSolid = new G4SubtractionSolid("activeVolumeSolid", internalVolumeSolid, oneElectrodeSolid /*, 0, activeVolumeShift*/);
 
 	// Create a solid volume for the external volume
 	G4Box* externalVolumeSolid = new G4Box("externalVolumeSolid", externalVolumeX / 2, externalVolumeY / 2, externalVolumeZ / 2);
@@ -582,6 +620,52 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	// Assign the GasOTPC to the active volume of the detector
 	G4LogicalVolume* activeVolumeLogical = new G4LogicalVolume(activeVolumeSolid, GasOTPC, "wallsLogical");
 
+	//vector of electrode placements, idk why but I think it's needed for the placements to work
+	std::vector<G4PVPlacement*> electrode_placements;
+
+	// Position the electrodes and place them inside the active volume
+	for (int i = 0; i < 20; i++) {
+		G4ThreeVector position = G4ThreeVector(0, 0, (electrodeThickness + electrodeSpacing) * (i - 9.5));
+		electrode_placements.push_back(new G4PVPlacement(0, position, oneElectrodeLogical, "electrodePhysical", activeVolumeLogical, false, i));
+	}
+
+	// detector dimensions
+	G4double crystalSideLenght = 5 * cm;
+	G4double crystalDepth = 10 * cm;
+	G4double reflectiveCoatingThickness = 0.25 * mm;
+	G4double externalCoverThickness = 1.5 * mm;
+	G4double totalDetectorSideHalfLenght = crystalSideLenght + 2 * reflectiveCoatingThickness + externalCoverThickness;
+
+	// crystal solid volume
+	G4Box* crystalVolumeSolid = new G4Box("crystalVolumeSolid", crystalSideLenght / 2, crystalSideLenght / 2, crystalDepth / 2);
+
+	// crystal logical volume
+	G4LogicalVolume* crystalVolumeLogical = new G4LogicalVolume(crystalVolumeSolid, CeBr3, "crystalVolumeLogical");
+
+	// crystal with reflective coating solid volume
+	G4Box* detectorVolumeSolid = new G4Box("detectorVolumeSolid", crystalSideLenght / 2 + reflectiveCoatingThickness, crystalSideLenght / 2 + reflectiveCoatingThickness, crystalDepth / 2 + reflectiveCoatingThickness);
+
+	// crystal with reflective coating logical volume
+	G4LogicalVolume* detectorVolumeLogical = new G4LogicalVolume(detectorVolumeSolid, PTFE, "detectorVolumeLogical");
+
+	// crystal placement in coating
+	G4VPhysicalVolume* physiCrystal = new G4PVPlacement(0, { 0,0,0 }, crystalVolumeLogical, "physiCrystal", detectorVolumeLogical, false, 0);
+
+	// detector4 solid volume
+	G4Box* detector4VolumeSolid = new G4Box("detector4VolumeSolid", totalDetectorSideHalfLenght, totalDetectorSideHalfLenght, crystalDepth / 2 + reflectiveCoatingThickness + externalCoverThickness);
+
+	// detector4 logical volume
+	G4LogicalVolume* detector4VolumeLogical = new G4LogicalVolume(detector4VolumeSolid, CeBr3, "detector4VolumeLogical");
+
+	//vector of detector placements, idk why but I think it's needed for the placements to work
+	std::vector<G4PVPlacement*> detector_placements;
+
+	// detectors placement in detector4
+	detector_placements.push_back(new G4PVPlacement(0, { reflectiveCoatingThickness + crystalSideLenght / 2,reflectiveCoatingThickness + crystalSideLenght / 2,0 }, detectorVolumeLogical, "physiDetector", detector4VolumeLogical, false, 0));
+	detector_placements.push_back(new G4PVPlacement(0, { -reflectiveCoatingThickness - crystalSideLenght / 2,reflectiveCoatingThickness + crystalSideLenght / 2,0 }, detectorVolumeLogical, "physiDetector", detector4VolumeLogical, false, 1));
+	detector_placements.push_back(new G4PVPlacement(0, { reflectiveCoatingThickness + crystalSideLenght / 2,-reflectiveCoatingThickness - crystalSideLenght / 2,0 }, detectorVolumeLogical, "physiDetector", detector4VolumeLogical, false, 2));
+	detector_placements.push_back(new G4PVPlacement(0, { -reflectiveCoatingThickness - crystalSideLenght / 2,-reflectiveCoatingThickness - crystalSideLenght / 2,0 }, detectorVolumeLogical, "physiDetector", detector4VolumeLogical, false, 3));
+
 	G4double WorldSize = 100. * cm;
 
 	G4Box* solidWorld = new G4Box("World", WorldSize / 2, WorldSize / 2, WorldSize / 2);
@@ -589,10 +673,38 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	//G4LogicalVolume* logicWorld = new G4LogicalVolume(solidWorld,Air,"World");       //AIR
 	G4VPhysicalVolume* physiWorld = new G4PVPlacement(0, G4ThreeVector(), "World", logicWorld, NULL, false, 0);
 
+
 	G4ThreeVector OTPC_position = G4ThreeVector(0. * cm, 0. * cm, 0. * mm);
 
-	G4VPhysicalVolume* physiOTPC = new G4PVPlacement(0, OTPC_position, "OTPC_activeVolume", activeVolumeLogical, physiWorld, false, 0);
-	G4VPhysicalVolume* physiWallsOTPC = new G4PVPlacement(0, OTPC_position, "OTPC_walls", wallsLogical, physiWorld, false, 0);
+
+	// Define the dimensions of the mother volume
+	G4double motherVolumeX = 50 * cm;
+	G4double motherVolumeY = 50 * cm;
+	G4double motherVolumeZ = 50 * cm;
+
+	//Mother volumen
+	G4Box* solidmother_OTPC = new G4Box("mother_OTPC", motherVolumeX / 2, motherVolumeY / 2, motherVolumeZ / 2);
+	G4LogicalVolume* logicmother_OTPC = new G4LogicalVolume(solidmother_OTPC, Vacuum, "mother_OTPC");
+	G4ThreeVector position_mother_OTPC = G4ThreeVector(0. * mm, 0. * cm, 0. * mm);
+	G4VPhysicalVolume* physimother_OTPC = new G4PVPlacement(0, position_mother_OTPC, "mother_OTPC", logicmother_OTPC, physiWorld, false, 0);
+
+	G4RotationMatrix* rotation = new G4RotationMatrix();
+	rotation->rotateY(90 * deg);
+
+	//G4VPhysicalVolume* physiDetector4test = new G4PVPlacement(rotation, OTPC_position, detector4VolumeLogical, "physiDetector4test", activeVolumeLogical, false, 0);
+
+	//vector of gamma detector placements, idk why but I think it's needed for the placements to work
+	std::vector<G4VPhysicalVolume*> detector4_placements;
+
+	detector4_placements.push_back(new G4PVPlacement(rotation, { externalVolumeX / 2 + totalDetectorSideHalfLenght,2 * totalDetectorSideHalfLenght,0 }, "physiDetector4", detector4VolumeLogical, physimother_OTPC, false, 0));
+	detector4_placements.push_back(new G4PVPlacement(rotation, { externalVolumeX / 2 + totalDetectorSideHalfLenght,-2 * totalDetectorSideHalfLenght,0 }, "physiDetector4", detector4VolumeLogical, physimother_OTPC, false, 1));
+	detector4_placements.push_back(new G4PVPlacement(rotation, { externalVolumeX / 2 + totalDetectorSideHalfLenght,0,0 }, "physiDetector4", detector4VolumeLogical, physimother_OTPC, false, 2));
+	detector4_placements.push_back(new G4PVPlacement(rotation, { -externalVolumeX / 2 - totalDetectorSideHalfLenght, externalVolumeY / 4,0 }, "physiDetector4", detector4VolumeLogical, physimother_OTPC, false, 3));
+	detector4_placements.push_back(new G4PVPlacement(rotation, { -externalVolumeX / 2 - totalDetectorSideHalfLenght, -externalVolumeY / 4,0 }, "physiDetector4", detector4VolumeLogical, physimother_OTPC, false, 4));
+
+	G4VPhysicalVolume* physiOTPC = new G4PVPlacement(0, OTPC_position, "OTPC_activeVolume", activeVolumeLogical, physimother_OTPC, false, 0);
+	G4VPhysicalVolume* physiWallsOTPC = new G4PVPlacement(0, OTPC_position, "OTPC_walls", wallsLogical, physimother_OTPC, false, 0);
+	//G4VPhysicalVolume* physiOneElectrodeOTPC = new G4PVPlacement(0, OTPC_position, "OTPC_electrodeVolume", oneElectrodeLogical, physimother_OTPC, false, 0);
 
 
 

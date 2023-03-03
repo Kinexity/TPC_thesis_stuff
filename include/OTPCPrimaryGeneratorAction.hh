@@ -30,7 +30,7 @@ class OTPCPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
           
   private:
     OTPCRunAction*            runAction;
-    G4ParticleGun*  particleGun;
+    G4ParticleGun* particleGun;
     
         
     G4double E[3], theta[3], phi[3];
