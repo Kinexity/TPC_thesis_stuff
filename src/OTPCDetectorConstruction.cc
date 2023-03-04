@@ -592,7 +592,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	G4Box* oneElectrodePlaneVolumeSolid = new G4Box("oneElectrodePlaneVolumeSolid", activeVolumeX / 2, activeVolumeY / 2, electrodeThickness / 2);
 
 	// Create a solid volume for the one electrode inner volume
-	G4Box* oneElectrodePlaneInternalVolumeSolid = new G4Box("oneElectrodePlaneInternalVolumeSolid", activeVolumeX / 2 - electrodeWidth, activeVolumeY / 2 - electrodeWidth, electrodeThickness / 2);
+	G4Box* oneElectrodePlaneInternalVolumeSolid = new G4Box("oneElectrodePlaneInternalVolumeSolid", activeVolumeX / 2 - electrodeWidth, activeVolumeY / 2 - electrodeWidth, electrodeThickness);
 
 	// Create a solid volume for the one electrode volume
 	G4SubtractionSolid* oneElectrodeSolid = new G4SubtractionSolid("oneElectrodeSolid", oneElectrodePlaneVolumeSolid, oneElectrodePlaneInternalVolumeSolid /*, 0, activeVolumeShift*/);
@@ -634,7 +634,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	G4double crystalDepth = 10 * cm;
 	G4double reflectiveCoatingThickness = 0.25 * mm;
 	G4double externalCoverThickness = 1.5 * mm;
-	G4double totalDetectorSideHalfLenght = crystalSideLenght + 2 * reflectiveCoatingThickness + externalCoverThickness;
+	G4double totalDetectorSideHalfLenght = crystalSideLenght + 2 * reflectiveCoatingThickness + externalCoverThickness * 2;
 
 	// crystal solid volume
 	G4Box* crystalVolumeSolid = new G4Box("crystalVolumeSolid", crystalSideLenght / 2, crystalSideLenght / 2, crystalDepth / 2);
@@ -660,11 +660,12 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	//vector of detector placements, idk why but I think it's needed for the placements to work
 	std::vector<G4PVPlacement*> detector_placements;
 
+	auto det_offset = reflectiveCoatingThickness + externalCoverThickness + crystalSideLenght / 2;
 	// detectors placement in detector4
-	detector_placements.push_back(new G4PVPlacement(0, { reflectiveCoatingThickness + crystalSideLenght / 2,reflectiveCoatingThickness + crystalSideLenght / 2,0 }, detectorVolumeLogical, "physiDetector", detector4VolumeLogical, false, 0));
-	detector_placements.push_back(new G4PVPlacement(0, { -reflectiveCoatingThickness - crystalSideLenght / 2,reflectiveCoatingThickness + crystalSideLenght / 2,0 }, detectorVolumeLogical, "physiDetector", detector4VolumeLogical, false, 1));
-	detector_placements.push_back(new G4PVPlacement(0, { reflectiveCoatingThickness + crystalSideLenght / 2,-reflectiveCoatingThickness - crystalSideLenght / 2,0 }, detectorVolumeLogical, "physiDetector", detector4VolumeLogical, false, 2));
-	detector_placements.push_back(new G4PVPlacement(0, { -reflectiveCoatingThickness - crystalSideLenght / 2,-reflectiveCoatingThickness - crystalSideLenght / 2,0 }, detectorVolumeLogical, "physiDetector", detector4VolumeLogical, false, 3));
+	detector_placements.push_back(new G4PVPlacement(0, { det_offset, det_offset,0 }, detectorVolumeLogical, "physiDetector", detector4VolumeLogical, false, 0));
+	detector_placements.push_back(new G4PVPlacement(0, { -det_offset, det_offset,0 }, detectorVolumeLogical, "physiDetector", detector4VolumeLogical, false, 1));
+	detector_placements.push_back(new G4PVPlacement(0, { det_offset, -det_offset,0 }, detectorVolumeLogical, "physiDetector", detector4VolumeLogical, false, 2));
+	detector_placements.push_back(new G4PVPlacement(0, { -det_offset, -det_offset,0 }, detectorVolumeLogical, "physiDetector", detector4VolumeLogical, false, 3));
 
 	G4double WorldSize = 100. * cm;
 
@@ -720,31 +721,46 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	/// visualization attributes
 	//
 
+
+	logicmother_OTPC->SetVisAttributes(G4VisAttributes::GetInvisible());
 	logicWorld->SetVisAttributes(G4VisAttributes::GetInvisible());
 
 
 	// red color for detector 
-	G4VisAttributes* Att2 = new G4VisAttributes(G4Colour(1.0, 0.0, 0.0));
+	G4VisAttributes* Att2 = new G4VisAttributes(G4Colour::Red());
 	// blue for gas
-	G4VisAttributes* Att3 = new G4VisAttributes(G4Colour(0.0, 0.0, 0.5));
+	G4VisAttributes* Att3 = new G4VisAttributes(G4Colour::Blue());
 	// grey for PMT
-	G4VisAttributes* Att4 = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5));
+	G4VisAttributes* Att4 = new G4VisAttributes(G4Colour::Grey());
 	//white
-	G4VisAttributes* Att5 = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0));
+	G4VisAttributes* Att5 = new G4VisAttributes(G4Colour::White());
 	//magenta
-	G4VisAttributes* Att6 = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0));
+	G4VisAttributes* Att6 = new G4VisAttributes(G4Colour::Magenta());
 	// black
-	G4VisAttributes* Att7 = new G4VisAttributes(G4Colour(0.0, 0.0, 0.0));
+	G4VisAttributes* Att_black = new G4VisAttributes(G4Colour::Black());
 	// green
-	G4VisAttributes* Att8 = new G4VisAttributes(G4Colour(0.0, 1.0, 0.0));
+	G4VisAttributes* Att8 = new G4VisAttributes(G4Colour::Green());
 	// orange
-	G4VisAttributes* Att9 = new G4VisAttributes(G4Colour(1, 0.5, 0, 0.8));
+	G4VisAttributes* Att_orange = new G4VisAttributes(G4Colour(1, 0.5, 0, 0.8));
 	// dark green
 	G4VisAttributes* Att10 = new G4VisAttributes(G4Colour(0.5, 1.0, 0.0));
+
+
+	G4VisAttributes* Att_pale_yellow = new G4VisAttributes(G4Colour(255. / 255, 204. / 255, 102. / 255));
+	G4VisAttributes* Att_light_grey = new G4VisAttributes(G4Colour(224. / 255, 224. / 255, 224. / 255));
+	G4VisAttributes* Att_light_blue = new G4VisAttributes(G4Colour(145. / 255, 202. / 255, 249. / 255));
+	//G4VisAttributes* Att_pale_yellow = new G4VisAttributes(G4Colour(255./255, 204./255, 102./255));
+
+
 
 	//OTPCLogicalVolume->SetVisAttributes(Att9);
 	//OTPCLogicalVolume->SetVisAttributes(G4VisAttributes::GetInvisible());
 	activeVolumeLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
+	oneElectrodeLogical->SetVisAttributes(Att_orange);
+	wallsLogical->SetVisAttributes(Att_pale_yellow);
+	detector4VolumeLogical->SetVisAttributes(Att_light_grey);
+	crystalVolumeLogical->SetVisAttributes(Att_light_blue);
+	detectorVolumeLogical->SetVisAttributes(Att_black);
 
 	//
 	// always return the physical World
