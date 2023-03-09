@@ -680,6 +680,8 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 		}
 	}
 
+	//<---------------------------------------------------------Crystal----------------------------------------------------------------->
+
 	// crystal solid volume
 	G4Box* crystalVolumeSolid = new G4Box("crystalVolumeSolid", crystalSideLenght / 2, crystalSideLenght / 2, crystalDepth / 2);
 
@@ -688,6 +690,8 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 
 	// crystal placement in detector
 	G4VPhysicalVolume* physiCrystal = new G4PVPlacement(0, G4ThreeVector(), crystalVolumeLogical, "physiCrystal", gammaDetectorVolumeLogical, false, 0);
+
+	//<---------------------------------------------------------Reflective coating------------------------------------------------------>
 
 	// reflective coating external solid volume
 	G4Box* reflectiveCoatingExternalVolumeSolid = new G4Box("reflectiveCoatingExternalVolumeSolid", crystalSideLenght / 2 + reflectiveCoatingThickness, crystalSideLenght / 2 + reflectiveCoatingThickness, crystalDepth / 2 + reflectiveCoatingThickness);
@@ -700,6 +704,8 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 
 	// reflective coating placement in detector
 	G4VPhysicalVolume* physiReflectiveCoating = new G4PVPlacement(0, G4ThreeVector(), reflectiveCoatingVolumeLogical, "physiReflectiveCoating", gammaDetectorVolumeLogical, false, 0);
+
+	//<---------------------------------------------------------External cover---------------------------------------------------------->
 
 	// external cover external solid volume
 	G4Box* externalCoverExternalVolumeSolid = new G4Box("externalCoverExternalVolumeSolid", gammaDetectorSideHalfLenght, gammaDetectorSideHalfLenght, gammaDetectorDepthHalfLenght);
