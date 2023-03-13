@@ -23,6 +23,8 @@
 #include "Randomize.hh"
 #include "time.h"
 
+#include <format>
+
 #include "G4SystemOfUnits.hh"
 // #include "g4std/fstream"
 // #include "g4std/iomanip"
@@ -85,7 +87,7 @@ OTPCRunAction::OTPCRunAction()
 	fprintf(metaFile, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", E1, E2, E3, xi, yi, zi, theta1, theta2, phi1, phi2, theta3, phi3);
 	fclose(metaFile);
 
-	eventFile = fopen("event.csv", "w");
+	eventFile.open("event.csv", std::ios_base::out);
 
 	///////////////////////////////////////////////////////////////////////////////////	
 
@@ -106,7 +108,7 @@ void OTPCRunAction::BeginOfRunAction(const G4Run*)
 void OTPCRunAction::EndOfRunAction(const G4Run*)
 {
 
-	fclose(eventFile);
+	eventFile.close();
 
 	//Stop timer and get CPU time
 	timer->Stop();
@@ -177,12 +179,17 @@ G4double OTPCRunAction::transferZ()
 	return zi;
 }
 
-void OTPCRunAction::fillOut(G4double EnergyDepositX[5000], G4double EnergyDepositY[5000], G4double EnergyDepositZ[5000], G4double EnergyDeposit[5000])
+void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>> EnergyDeposit, std::array<G4double, 20> EnergyGammaCrystals)
 {
 
-	for (G4int i = 0; i < 5000; i++) {
-		if (EnergyDeposit[i] > 0) {
-			fprintf(eventFile, "%f,%f,%f,%f\n", EnergyDepositX[i], EnergyDepositY[i], EnergyDepositZ[i], EnergyDeposit[i]);
+	for (auto& EnergyDeposit_i : EnergyDeposit) {
+
+		if (EnergyDeposit_i[3] > 0) {
+			eventFile << EnergyDeposit_i[0] << ',' << EnergyDeposit_i[1] << ',' << EnergyDeposit_i[2] << ',' << EnergyDeposit_i[3] << '\n';
 		}
+	}
+
+	for (auto& EnergyDepositOneCrystal : EnergyGammaCrystals) {
+		eventFile << EnergyDepositOneCrystal << '\t';
 	}
 }

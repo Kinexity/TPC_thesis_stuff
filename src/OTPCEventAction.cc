@@ -37,27 +37,7 @@ OTPCEventAction::OTPCEventAction(OTPCRunAction* RunAct)
 OTPCEventAction::~OTPCEventAction()
 {}
 
-void OTPCEventAction::BeginOfEventAction(const G4Event*)
-{
-
-	Range = 5000; //max number of steps saved
-
-	for (G4int i = 0; i < Range; i++) {
-		EnergyDepositX[i] = 0.0;
-	}
-	for (G4int i = 0; i < Range; i++) {
-		EnergyDepositY[i] = 0.0;
-	}
-	for (G4int i = 0; i < Range; i++) {
-		EnergyDepositZ[i] = 0.0;
-	}
-	for (G4int i = 0; i < Range; i++) {
-		EnergyDeposit[i] = 0.0;
-	}
-
-	nstep = 0;
-
-}
+void OTPCEventAction::BeginOfEventAction(const G4Event*) {}
 
 void OTPCEventAction::EndOfEventAction(const G4Event* evt)
 {
@@ -66,17 +46,17 @@ void OTPCEventAction::EndOfEventAction(const G4Event* evt)
 	  if(EnergyDepositX[i]>0){G4cout<<"From event: "<<i<<" "<<EnergyDepositX[i]<<G4endl;}
 	}*/
 
-	runAction->fillOut(EnergyDepositX, EnergyDepositY, EnergyDepositZ, EnergyDeposit);
+	runAction->fillOut(EnergyDeposit, TotalEnergyDepositCrystal);
 
 }
 
-void OTPCEventAction::addEdep(G4double Edep, G4double x, G4double y, G4double z)
+void OTPCEventAction::add_E_i(G4int nCrystal, G4double edep)
 {
-	EnergyDepositX[nstep] = x;
-	EnergyDepositY[nstep] = y;
-	EnergyDepositZ[nstep] = z;
-	EnergyDeposit[nstep] = Edep;
-	nstep++;
+	TotalEnergyDepositCrystal[nCrystal] += edep; //we have to initialize this variable at the beginning of the EventAction
+}
+
+void OTPCEventAction::addEdep(G4double Edep, G4double x, G4double y, G4double z) {
+	EnergyDeposit.push_back({ x,y,z,Edep });
 	//G4cout<<nstep<<G4endl;
 
 }

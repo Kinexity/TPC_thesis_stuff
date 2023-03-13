@@ -23,6 +23,8 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <vector>
+#include <array>
 #include "G4Timer.hh"
 
 class G4Run;
@@ -40,7 +42,7 @@ class OTPCRunAction : public G4UserRunAction
     void EndOfRunAction(const G4Run*);
 
 
-    void fillOut(G4double EnergyDepositX[5000], G4double EnergyDepositY[5000], G4double EnergyDepositZ[5000], G4double EnergyDeposit[5000]);    
+    void fillOut(std::vector<std::array<G4double, 4>> EnergyDeposit, std::array<G4double, 20> EnergyGammaCrystals);
     
     G4double transferE1();
     G4double transferE2();
@@ -67,7 +69,7 @@ private:
    
     G4Timer* timer;
     
-    FILE * eventFile;
+    std::fstream eventFile;
     G4double                  x[5000];
     G4double                  y[5000];
     G4double                  z[5000];

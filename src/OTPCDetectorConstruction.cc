@@ -600,7 +600,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	G4LogicalVolume* wallsLogical = new G4LogicalVolume(wallsSolid, Stesalit, "wallsLogical");
 
 	// Assign the GasOTPC to the active volume of the detector
-	G4LogicalVolume* activeVolumeLogical = new G4LogicalVolume(activeVolumeSolid, GasOTPC, "wallsLogical");
+	G4LogicalVolume* activeVolumeLogical = new G4LogicalVolume(activeVolumeSolid, GasOTPC, "activeVolumeLogical");
 
 	G4VPhysicalVolume* physiOTPC = new G4PVPlacement(0, OTPC_position, "OTPC_activeVolume", activeVolumeLogical, physimother_OTPC, false, 0);
 	G4VPhysicalVolume* physiWallsOTPC = new G4PVPlacement(0, OTPC_position, "OTPC_walls", wallsLogical, physimother_OTPC, false, 0);
@@ -643,7 +643,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	rotation->rotateY(90 * deg);
 
 	// detector dimensions
-	G4double crystalSideLenght = 5 * cm;
+	G4double crystalSideLenght = 4.65 * cm;
 	G4double crystalDepth = 10 * cm;
 	G4double reflectiveCoatingThickness = 0.25 * mm;
 	G4double externalCoverThickness = 1.5 * mm;
@@ -663,6 +663,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	std::vector<G4VPhysicalVolume*> gammaDetectorPlacements;
 
 	// gamma detector placements
+	G4double margin = 0.5 * cm;
 	G4int gammaDetectorPlacementCounter = 0;
 	for (auto detectorSideSign : { -1,1 }) { // side of the OTPC detector
 		for (auto gammaDetectorRowSign : { -1,1 }) { // is it an upper or lower row of gamma detectors
@@ -673,7 +674,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 				G4double gammaDetectorOffsetX = externalVolumeX / 2 + gammaDetectorDepthHalfLenght;
 				G4ThreeVector gammaDetectorPosition = {
 					detectorSideSign * gammaDetectorOffsetX,
-					(2 * gammaDetectorRowPosition - 5) * gammaDetectorSideHalfLenght,
+					(2 * gammaDetectorRowPosition - 5) * gammaDetectorSideHalfLenght + margin * (gammaDetectorRowPosition / 2 - 1),
 					gammaDetectorRowSign * gammaDetectorSideHalfLenght };
 				gammaDetectorPlacements.push_back(new G4PVPlacement(rotation, gammaDetectorPosition, "physiGammaDetector", gammaDetectorVolumeLogical, physimother_OTPC, false, gammaDetectorPlacementCounter++));
 			}

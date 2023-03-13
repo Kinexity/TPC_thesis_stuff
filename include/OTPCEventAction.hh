@@ -20,31 +20,32 @@
 
 #include "G4UserEventAction.hh"
 #include "globals.hh"
+#include <array>
+#include <vector>
 
 class G4Event;
 class OTPCRunAction;
 
 class OTPCEventAction : public G4UserEventAction
 {
-  public:
-    OTPCEventAction(OTPCRunAction*);
-    ~OTPCEventAction();
+public:
+	OTPCEventAction(OTPCRunAction*);
+	~OTPCEventAction();
 
-  public:
-    void BeginOfEventAction(const G4Event*);
-    void EndOfEventAction(const G4Event*);
-    void addEdep(G4double Edep, G4double x, G4double y, G4double z);
-    
+public:
+	void BeginOfEventAction(const G4Event*);
+	void EndOfEventAction(const G4Event*);
+	void addEdep(G4double Edep, G4double x, G4double y, G4double z);
+	void add_E_i(G4int nCrystal, G4double edep);
 
-  private:
-    OTPCRunAction*            runAction;
-    G4int                     Range;
-    G4int                     nstep;
-    
-    G4double                  EnergyDepositX[5000];
-    G4double                  EnergyDepositY[5000];
-    G4double                  EnergyDepositZ[5000];
-    G4double                  EnergyDeposit[5000];
+private:
+	OTPCRunAction* runAction;
+	G4int                     Range;
+
+	std::vector<std::array<G4double, 4>>
+		EnergyDeposit;
+	std::array<G4double, 20>
+		TotalEnergyDepositCrystal;
 };
 
 #endif
