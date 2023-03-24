@@ -3,7 +3,7 @@
 // V. Guadilla 2021
 /////////////////////////////////////////////////////////////////////////
 
-#include "OTPCPrimaryGeneratorAction.hh"
+#include "OTPCPrimaryGeneratorAction2.hh"
 
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
