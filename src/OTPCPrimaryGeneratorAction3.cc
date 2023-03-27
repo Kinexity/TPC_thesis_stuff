@@ -3,7 +3,7 @@
 // V. Guadilla 2021
 /////////////////////////////////////////////////////////////////////////
 
-#include "OTPCPrimaryGeneratorAction.hh"
+#include "OTPCPrimaryGeneratorAction3.hh"
 
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
@@ -42,7 +42,7 @@ OTPCPrimaryGeneratorAction::OTPCPrimaryGeneratorAction(OTPCRunAction* RunAct)
     
     //////////Reading the input data for primary generator///////////
     
-    ifstream evenInputInformation("../particles.data");
+    ifstream evenInputInformation("../particles3.data");
     
     evenInputInformation >> header1;
     evenInputInformation >> type[0] >> type[1] >> type[2];

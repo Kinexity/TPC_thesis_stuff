@@ -13,7 +13,7 @@
 //  V. Guadilla 2021
 ///////////////////////////////////////////////////////////////
 
-#include "OTPCRunAction.hh"
+#include "OTPCRunAction3.hh"
 
 #include "G4Run.hh"
 
