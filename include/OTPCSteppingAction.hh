@@ -26,7 +26,7 @@ class OTPCSteppingAction : public G4UserSteppingAction
 {
   public:
     OTPCSteppingAction(OTPCEventAction*);
-    ~OTPCSteppingAction();
+    ~OTPCSteppingAction() = default;
 
     void UserSteppingAction(const G4Step*);
     

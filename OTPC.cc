@@ -39,8 +39,8 @@
 
 #include "OTPCDetectorConstruction.hh"
 #include "OTPCPhysicsList.hh"
-#include "OTPCPrimaryGeneratorAction.hh"
-#include "OTPCRunAction.hh"
+#include "OTPCPrimaryGeneratorAction3.hh"
+#include "OTPCRunAction3.hh"
 #include "OTPCEventAction.hh"
 #include "OTPCSteppingAction.hh"
 
@@ -55,6 +55,12 @@
 #include <memory>
 #include <conio.h>
 
+inline std::string filename_string(std::string path_str) {
+	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
+};
+
+#define _endl_ " (" << filename_string(__FILE__) << "; " << __LINE__ << ")" << '\n'
+#define checkpoint std::cout << "checkpoint" << _endl_
 
 //using namespace std;
 
@@ -65,6 +71,11 @@ int main(int argc, char** argv)
 	//if (std::filesystem::exists("~/results_TPC")) {
 	//
 	//}
+	G4int numberOfEvent = 1;
+
+	if (argc > 1) {
+		numberOfEvent = std::stoi(argv[1]);
+	}
 
 	// Choose the random engine and initialize
 	CLHEP::HepRandom::setTheEngine(new CLHEP::RanluxEngine);
@@ -72,7 +83,8 @@ int main(int argc, char** argv)
 	G4long Seed = 2193585;
 	G4int Lux = 3;
 	CLHEP::HepRandom::setTheSeed(Seed, Lux);
-	std::cout << "Test\n";
+
+	checkpoint;
 	_putenv_s("G4ENSDFSTATEDATA", "C:\\Program Files (x86)\\Geant4 10.5\\data\\G4ENSDFSTATE2.2");
 	system("set G4ENSDFSTATEDATA");
 	_putenv_s("G4LEVELGAMMADATA", "C:\\Program Files(x86)\\Geant4 10.5\\data\\PhotonEvaporation5.3");
@@ -84,10 +96,12 @@ int main(int argc, char** argv)
 	// construct the default run manager
 	std::unique_ptr<G4RunManager> runManager = std::make_unique<G4RunManager>();
 
+	checkpoint;
 	// set mandatory initialization classes
 	runManager->SetUserInitialization(new OTPCDetectorConstruction);
 	runManager->SetUserInitialization(new OTPCPhysicsList);
 
+	checkpoint;
 	// set aditional user action classes
 	OTPCRunAction* OTPCrun = new OTPCRunAction;
 	runManager->SetUserAction(OTPCrun);
@@ -96,6 +110,7 @@ int main(int argc, char** argv)
 	OTPCSteppingAction* OTPCstep = new OTPCSteppingAction(OTPCevent);
 	runManager->SetUserAction(OTPCstep);
 
+	checkpoint;
 	// set mandatory user action class
 	OTPCPrimaryGeneratorAction*
 		OTPCgun = new OTPCPrimaryGeneratorAction(OTPCrun);
@@ -106,7 +121,8 @@ int main(int argc, char** argv)
 	//     new OTPCPrimaryGeneratorAction(OTPCevent);
 	//   runManager->SetUserAction(OTPCgun);
 
-	  // initialize G4 kernel
+	checkpoint;
+	// initialize G4 kernel
 	runManager->Initialize();
 
 	// Visualization, if you choose to have it!
@@ -120,7 +136,7 @@ int main(int argc, char** argv)
 
 	// start a run
 
-	G4int numberOfEvent = 1;
+	checkpoint;
 	runManager->BeamOn(numberOfEvent);
 
 	// job termination

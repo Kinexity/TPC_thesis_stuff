@@ -25,9 +25,6 @@ OTPCSteppingAction::OTPCSteppingAction(OTPCEventAction* EvAct)
 	:eventAction(EvAct)
 { }
 
-OTPCSteppingAction::~OTPCSteppingAction()
-{ }
-
 void OTPCSteppingAction::UserSteppingAction(const G4Step* aStep)
 {
 
@@ -64,8 +61,8 @@ void OTPCSteppingAction::UserSteppingAction(const G4Step* aStep)
 
 	if (edep > 0.0 & currentMaterialName == "CeBr3") {
 
-		G4int nCrystal = touch->GetCopyNumber(/*N*/ 0); //N will be the number of levels up, we have to check it to pickup the index of CeBr3 crystal
-		eventAction->add_E_i(nCrystal, edep);  //we have to define this function
+		G4int nCrystal = touch->GetCopyNumber(1); //N will be the number of levels up, we have to check it to pickup the index of CeBr3 crystal
+		eventAction->add_E_i(nCrystal, edep / keV);  //we have to define this function
 	}
 
 }

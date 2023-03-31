@@ -75,8 +75,9 @@ void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>> EnergyDeposit, 
 			eventFile << EnergyDeposit_i[0] << ',' << EnergyDeposit_i[1] << ',' << EnergyDeposit_i[2] << ',' << EnergyDeposit_i[3] << '\n';
 		}
 	}
-
+	eventFile << "\n\n";
 	for (auto& EnergyDepositOneCrystal : EnergyGammaCrystals) {
 		eventFile << EnergyDepositOneCrystal << '\t';
 	}
+	eventFile << "\n\n";
 }

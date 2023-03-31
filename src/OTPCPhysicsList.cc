@@ -33,7 +33,7 @@
 #include "OTPCPhysicsList.hh"
 #include "OTPCPhysicsListMessenger.hh"
 
-#include "PhysListEmStandard.hh"
+#include "PhysListEmStandard3.hh"
 
 #include "G4EmStandardPhysics.hh"
 #include "G4EmStandardPhysics_option1.hh"

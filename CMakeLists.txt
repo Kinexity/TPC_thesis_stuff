@@ -29,12 +29,25 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 
+set(sources3 ${sources})
+set(headers3 ${headers})
+
+list(REMOVE_ITEM sources3 ${PROJECT_SOURCE_DIR}/src/OTPCRunAction.cc)
+list(REMOVE_ITEM sources3 ${PROJECT_SOURCE_DIR}/src/OTPCPrimaryGeneratorAction.cc)
+list(REMOVE_ITEM sources3 ${PROJECT_SOURCE_DIR}/src/OTPCPrimaryGeneratorAction2.cc)
+
+list(REMOVE_ITEM headers3 ${PROJECT_SOURCE_DIR}/include/PhysListEmStandard.hh)
+list(REMOVE_ITEM headers3 ${PROJECT_SOURCE_DIR}/include/OTPCRunAction.hh)
+list(REMOVE_ITEM headers3 ${PROJECT_SOURCE_DIR}/include/OTPCPrimaryGeneratorAction.hh)
+list(REMOVE_ITEM headers3 ${PROJECT_SOURCE_DIR}/include/OTPCPrimaryGeneratorAction2.hh)
+
+
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(OTPC OTPC.cc ${sources} ${headers})
+add_executable(OTPC OTPC.cc ${sources3} ${headers3})
 target_link_libraries(OTPC ${Geant4_LIBRARIES})
-add_executable(OTPC_manual OTPC_manual.cc ${sources} ${headers})
+add_executable(OTPC_manual OTPC_manual.cc ${sources3} ${headers3})
 target_link_libraries(OTPC_manual ${Geant4_LIBRARIES})
 
 

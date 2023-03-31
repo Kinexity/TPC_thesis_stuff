@@ -27,7 +27,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "PhysListEmStandard.hh"
+#include "PhysListEmStandard3.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ProcessManager.hh"
 #include "G4PhysicsListHelper.hh"
@@ -76,17 +76,17 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PhysListEmStandard::PhysListEmStandard(const G4String& name)
-   :  G4VPhysicsConstructor(name)
+	: G4VPhysicsConstructor(name)
 {
-  G4EmParameters* param = G4EmParameters::Instance();
-  param->SetDefaults();
-  param->SetMinEnergy(10*eV);
-  param->SetMaxEnergy(10*TeV);
-  param->SetNumberOfBinsPerDecade(10);
-  param->SetMscStepLimitType(fUseSafetyPlus);
-  param->SetFluo(true);
-  SetPhysicsType(bElectromagnetic);
-  //param->SetUseICRU90Data(true);
+	G4EmParameters* param = G4EmParameters::Instance();
+	param->SetDefaults();
+	param->SetMinEnergy(10 * eV);
+	param->SetMaxEnergy(10 * TeV);
+	param->SetNumberOfBinsPerDecade(10);
+	param->SetMscStepLimitType(fUseSafetyPlus);
+	param->SetFluo(true);
+	SetPhysicsType(bElectromagnetic);
+	//param->SetUseICRU90Data(true);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -98,117 +98,123 @@ PhysListEmStandard::~PhysListEmStandard()
 
 void PhysListEmStandard::ConstructProcess()
 {
-  G4PhysicsListHelper* ph = G4PhysicsListHelper::GetPhysicsListHelper();
-  
-  // Add standard EM Processes
-  //
-  auto particleIterator=GetParticleIterator();
-  particleIterator->reset();
-  while( (*particleIterator)() ){
-    G4ParticleDefinition* particle = particleIterator->value();
-    G4String particleName = particle->GetParticleName();
-     
-    if (particleName == "gamma") {
+	G4PhysicsListHelper* ph = G4PhysicsListHelper::GetPhysicsListHelper();
 
-      ph->RegisterProcess(new G4PhotoElectricEffect, particle);
-      G4ComptonScattering* cs   = new G4ComptonScattering;
-      cs->SetEmModel(new G4KleinNishinaModel());
-      ph->RegisterProcess(cs, particle);
-      ph->RegisterProcess(new G4GammaConversion, particle);
-      ////ph->RegisterProcess(new G4RayleighScattering, particle);
-     
-    } else if (particleName == "e-") {
-    
-      ph->RegisterProcess(new G4eMultipleScattering(), particle);
-      //            
-      G4eIonisation* eIoni = new G4eIonisation();
-      eIoni->SetStepFunction(0.1, 100*um);      
-      ph->RegisterProcess(eIoni, particle);
-      //
-      ph->RegisterProcess(new G4eBremsstrahlung(), particle);      
-            
-    } else if (particleName == "e+") {
-    
-      ph->RegisterProcess(new G4eMultipleScattering(), particle);
-      //     
-      G4eIonisation* eIoni = new G4eIonisation();
-      eIoni->SetStepFunction(0.1, 100*um);      
-      ph->RegisterProcess(eIoni, particle);
-      //
-      ph->RegisterProcess(new G4eBremsstrahlung(), particle);
-      //
-      ph->RegisterProcess(new G4eplusAnnihilation(), particle);    
-                  
-    } else if( particleName == "proton" ||
-               particleName == "pi-" ||
-               particleName == "pi+"    ) {
+	// Add standard EM Processes
+	//
+	auto particleIterator = GetParticleIterator();
+	particleIterator->reset();
+	while ((*particleIterator)()) {
+		G4ParticleDefinition* particle = particleIterator->value();
+		G4String particleName = particle->GetParticleName();
 
-      ph->RegisterProcess(new G4hMultipleScattering(), particle);      
-      G4hIonisation* hIoni = new G4hIonisation();
-      
-      //hIoni->SetEmModel(new G4BraggModel(),1); //protons <2MeV (default)
-      //hIoni->SetEmModel(new G4BraggIonModel(),1); //protons <2MeV (default)
-      //hIoni->SetEmModel(new G4BetheBlochIonModel(),2); //protons > 2MeV (default)
-      
-      //hIoni->SetEmModel(new G4hParametrisedLossModel()); //does not work because it is in the old low energy class 
-      //hIoni->SetEmModel(new G4hParametrisedLossModel_old()); //OLD version with more options (does not work!)
-      
-      hIoni->SetStepFunction(0.1, 50*um);
-      
-      //hIoni->SetStepFunction(0.02, 0.01*um);
-      //hIoni->SetLinearLossLimit(1e-5);
-      //hIoni->SetDEDXBinning(520);
-    
-      ph->RegisterProcess(hIoni, particle);
-      ph->RegisterProcess(new G4hBremsstrahlung(), particle);
-      ph->RegisterProcess(new G4hPairProduction(), particle);
-      ph->RegisterProcess(new G4NuclearStopping(), particle);  
-      
-     
-    } else if( particleName == "alpha" || 
-               particleName == "He3"    ) {
+		if (particleName == "gamma") {
 
-      ph->RegisterProcess(new G4hMultipleScattering(), particle);           
-      G4ionIonisation* ionIoni = new G4ionIonisation();
-      ionIoni->SetStepFunction(0.1, 1*um);
-      ph->RegisterProcess(ionIoni, particle);
-      ph->RegisterProcess(new G4NuclearStopping(), particle);      
-            
-    } else if( particleName == "GenericIon" ) {
+			ph->RegisterProcess(new G4PhotoElectricEffect, particle);
+			G4ComptonScattering* cs = new G4ComptonScattering;
+			cs->SetEmModel(new G4KleinNishinaModel());
+			ph->RegisterProcess(cs, particle);
+			ph->RegisterProcess(new G4GammaConversion, particle);
+			////ph->RegisterProcess(new G4RayleighScattering, particle);
 
-      ph->RegisterProcess(new G4hMultipleScattering(), particle);          
-      G4ionIonisation* ionIoni = new G4ionIonisation();
-      //ionIoni->SetEmModel(new G4BraggIonModel()); //WORKS BETTER FOR ME (default)
-      //ionIoni->SetEmModel(new G4BraggIonGasModel()); //working? Strange results (in theory for low-density media)
-      //ionIoni->SetEmModel(new G4IonParametrisedLossModel()); //THEORETICALLY BETTER (tables ICRU 49)
-      
-      //ionIoni->SetEmModel(new G4BraggIonGasModel(),1);
-      //ionIoni->SetEmModel(new G4BetheBlochIonGasModel(), 2);
-  
-      ionIoni->SetStepFunction(0.1, 1*um);
-      //ionIoni->SetStepFunction(0.02, 0.01*um);
-      //ionIoni->SetStepFunction(0.01, 0.01*um);
-      
-      //ionIoni->SetLinearLossLimit(1e-5);
-      //ionIoni->SetDEDXBinning(220);
-      
-      ph->RegisterProcess(ionIoni, particle);
-      ph->RegisterProcess(new G4NuclearStopping(), particle);                   
-      
-    } else if ((!particle->IsShortLived()) &&
-                (particle->GetPDGCharge() != 0.0) && 
-                (particle->GetParticleName() != "chargedgeantino")) {
+		}
+		else if (particleName == "e-") {
 
-      //all others charged particles except geantino
-      ph->RegisterProcess(new G4hMultipleScattering(), particle);
-      ph->RegisterProcess(new G4hIonisation(), particle);
-    }
-  }
+			ph->RegisterProcess(new G4eMultipleScattering(), particle);
+			//            
+			G4eIonisation* eIoni = new G4eIonisation();
+			eIoni->SetStepFunction(0.1, 100 * um);
+			ph->RegisterProcess(eIoni, particle);
+			//
+			ph->RegisterProcess(new G4eBremsstrahlung(), particle);
 
-  // Deexcitation
-  //
-  G4VAtomDeexcitation* de = new G4UAtomicDeexcitation();
-  G4LossTableManager::Instance()->SetAtomDeexcitation(de);
+		}
+		else if (particleName == "e+") {
+
+			ph->RegisterProcess(new G4eMultipleScattering(), particle);
+			//     
+			G4eIonisation* eIoni = new G4eIonisation();
+			eIoni->SetStepFunction(0.1, 100 * um);
+			ph->RegisterProcess(eIoni, particle);
+			//
+			ph->RegisterProcess(new G4eBremsstrahlung(), particle);
+			//
+			ph->RegisterProcess(new G4eplusAnnihilation(), particle);
+
+		}
+		else if (particleName == "proton" ||
+			particleName == "pi-" ||
+			particleName == "pi+") {
+
+			ph->RegisterProcess(new G4hMultipleScattering(), particle);
+			G4hIonisation* hIoni = new G4hIonisation();
+
+			//hIoni->SetEmModel(new G4BraggModel(),1); //protons <2MeV (default)
+			//hIoni->SetEmModel(new G4BraggIonModel(),1); //protons <2MeV (default)
+			//hIoni->SetEmModel(new G4BetheBlochIonModel(),2); //protons > 2MeV (default)
+
+			//hIoni->SetEmModel(new G4hParametrisedLossModel()); //does not work because it is in the old low energy class 
+			//hIoni->SetEmModel(new G4hParametrisedLossModel_old()); //OLD version with more options (does not work!)
+
+			hIoni->SetStepFunction(0.1, 50 * um);
+
+			//hIoni->SetStepFunction(0.02, 0.01*um);
+			//hIoni->SetLinearLossLimit(1e-5);
+			//hIoni->SetDEDXBinning(520);
+
+			ph->RegisterProcess(hIoni, particle);
+			ph->RegisterProcess(new G4hBremsstrahlung(), particle);
+			ph->RegisterProcess(new G4hPairProduction(), particle);
+			ph->RegisterProcess(new G4NuclearStopping(), particle);
+
+
+		}
+		else if (particleName == "alpha" ||
+			particleName == "He3") {
+
+			ph->RegisterProcess(new G4hMultipleScattering(), particle);
+			G4ionIonisation* ionIoni = new G4ionIonisation();
+			ionIoni->SetStepFunction(0.1, 1 * um);
+			ph->RegisterProcess(ionIoni, particle);
+			ph->RegisterProcess(new G4NuclearStopping(), particle);
+
+		}
+		else if (particleName == "GenericIon") {
+
+			ph->RegisterProcess(new G4hMultipleScattering(), particle);
+			G4ionIonisation* ionIoni = new G4ionIonisation();
+			//ionIoni->SetEmModel(new G4BraggIonModel()); //WORKS BETTER FOR ME (default)
+			//ionIoni->SetEmModel(new G4BraggIonGasModel()); //working? Strange results (in theory for low-density media)
+			//ionIoni->SetEmModel(new G4IonParametrisedLossModel()); //THEORETICALLY BETTER (tables ICRU 49)
+
+			//ionIoni->SetEmModel(new G4BraggIonGasModel(),1);
+			//ionIoni->SetEmModel(new G4BetheBlochIonGasModel(), 2);
+
+			ionIoni->SetStepFunction(0.1, 1 * um);
+			//ionIoni->SetStepFunction(0.02, 0.01*um);
+			//ionIoni->SetStepFunction(0.01, 0.01*um);
+
+			//ionIoni->SetLinearLossLimit(1e-5);
+			//ionIoni->SetDEDXBinning(220);
+
+			ph->RegisterProcess(ionIoni, particle);
+			ph->RegisterProcess(new G4NuclearStopping(), particle);
+
+		}
+		else if ((!particle->IsShortLived()) &&
+			(particle->GetPDGCharge() != 0.0) &&
+			(particle->GetParticleName() != "chargedgeantino")) {
+
+			//all others charged particles except geantino
+			ph->RegisterProcess(new G4hMultipleScattering(), particle);
+			ph->RegisterProcess(new G4hIonisation(), particle);
+		}
+	}
+
+	// Deexcitation
+	//
+	G4VAtomDeexcitation* de = new G4UAtomicDeexcitation();
+	G4LossTableManager::Instance()->SetAtomDeexcitation(de);
 
 }
 
