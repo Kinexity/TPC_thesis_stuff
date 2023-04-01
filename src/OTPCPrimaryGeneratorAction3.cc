@@ -28,6 +28,13 @@
 
 using namespace std;
 
+inline std::string filename_string(std::string path_str) {
+	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
+};
+
+#define _endl_ " (" << filename_string(__FILE__) << "; " << __LINE__ << ")" << '\n'
+#define checkpoint std::cout << "checkpoint" << _endl_
+
 
 OTPCPrimaryGeneratorAction::OTPCPrimaryGeneratorAction(OTPCRunAction* RunAct)
 	:runAction(RunAct)
@@ -74,7 +81,7 @@ OTPCPrimaryGeneratorAction::OTPCPrimaryGeneratorAction(OTPCRunAction* RunAct)
 
 	// particles per event
 	G4int n_particle = 1;
-	particleGun = new G4ParticleGun(n_particle);
+	particleGun = std::make_unique<G4ParticleGun>(n_particle);
 
 	// particle type
 	G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
@@ -85,12 +92,6 @@ OTPCPrimaryGeneratorAction::OTPCPrimaryGeneratorAction(OTPCRunAction* RunAct)
 
 
 }
-
-OTPCPrimaryGeneratorAction::~OTPCPrimaryGeneratorAction()
-{
-	delete particleGun;
-}
-
 
 
 void OTPCPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
@@ -164,26 +165,23 @@ void OTPCPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 	G4double excitEnergy = 0. * keV;
 	G4ParticleDefinition* ion = G4IonTable::GetIonTable()->GetIon(Z, A, excitEnergy);
 
-
-	G4double ux, uy, uz;
+	checkpoint;
 
 	for (G4int i = 0; i < 3; i++) {
 		if (type[i] > 0 & type[i] < 5) {
 
-			//Momentum direction according to input angles
-			ux = sin(theta[i] * degree) * cos(phi[i] * degree);
-			uy = sin(theta[i] * degree) * sin(phi[i] * degree);
-			uz = cos(theta[i] * degree);
-
-			//G4cout<<ux<<" "<<uy<<" "<<uz<<" "<<x<<" "<<y<<" "<<z<<G4endl;
 
 			if (type[i] == 1) { particleGun->SetParticleDefinition(proton); }
 			else if (type[i] == 2) { particleGun->SetParticleDefinition(alpha); }
 			else if (type[i] == 3) { particleGun->SetParticleDefinition(ion); }
 			else if (type[i] == 4) { particleGun->SetParticleDefinition(gammaray); }
 
+			//Momentum direction according to input angles
+			G4ThreeVector momentumDirection;
+			momentumDirection.setRThetaPhi(1., theta[i] * degree, phi[i] * degree);
+
 			particleGun->SetParticlePosition(G4ThreeVector(x * mm, y * mm, z * mm));
-			particleGun->SetParticleMomentumDirection(G4ThreeVector(ux, uy, uz));
+			particleGun->SetParticleMomentumDirection(momentumDirection);
 			particleGun->SetParticleEnergy(E[i] * keV);
 			particleGun->GeneratePrimaryVertex(anEvent);
 

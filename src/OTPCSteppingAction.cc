@@ -25,6 +25,14 @@ OTPCSteppingAction::OTPCSteppingAction(OTPCEventAction* EvAct)
 	:eventAction(EvAct)
 { }
 
+inline std::string filename_string(std::string path_str) {
+	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
+};
+
+#define _endl_ " (" << filename_string(__FILE__) << "; " << __LINE__ << ")" << '\n'
+#define checkpoint std::cout << "checkpoint" << _endl_
+
+
 void OTPCSteppingAction::UserSteppingAction(const G4Step* aStep)
 {
 

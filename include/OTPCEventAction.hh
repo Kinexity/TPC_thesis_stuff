@@ -45,7 +45,7 @@ private:
 	std::vector<std::array<G4double, 4>>
 		EnergyDeposit;
 	std::array<G4double, 20>
-		TotalEnergyDepositCrystal;
+		TotalEnergyDepositCrystal = { 0 };
 };
 
 #endif
