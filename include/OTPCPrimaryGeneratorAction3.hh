@@ -20,22 +20,22 @@ extern std::ifstream eventInputFile;
 
 class OTPCPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
-public:
-	OTPCPrimaryGeneratorAction(OTPCRunAction*);
-	~OTPCPrimaryGeneratorAction() = default;
+  public:
+    OTPCPrimaryGeneratorAction(OTPCRunAction*);
+    ~OTPCPrimaryGeneratorAction();
 
-public:
-	void GeneratePrimaries(G4Event* anEvent);
-	std::unique_ptr<G4ParticleGun>& GetParticleGun() { return particleGun; };
-
-private:
-	OTPCRunAction* runAction;
-	std::unique_ptr<G4ParticleGun> particleGun;
-
-
-	G4double E[3], theta[3], phi[3];
-	G4int type[3];
-	G4double x, y, z;
+  public:
+    void GeneratePrimaries(G4Event* anEvent);
+    G4ParticleGun* GetParticleGun() { return particleGun;} ;
+          
+  private:
+    OTPCRunAction*            runAction;
+    G4ParticleGun*  particleGun;
+    
+        
+    G4double E[3], theta[3], phi[3];
+    G4int type[3];
+    G4double x,y,z;
 
 };
 

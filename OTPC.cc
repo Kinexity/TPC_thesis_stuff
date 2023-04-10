@@ -53,7 +53,6 @@
 #include <iomanip>
 #include <filesystem>
 #include <memory>
-#include <conio.h>
 
 inline std::string filename_string(std::string path_str) {
 	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
@@ -71,7 +70,7 @@ int main(int argc, char** argv)
 	//if (std::filesystem::exists("~/results_TPC")) {
 	//
 	//}
-	G4int numberOfEvent = 1;
+	G4int numberOfEvent = 10;
 
 	if (argc > 1) {
 		numberOfEvent = std::stoi(argv[1]);
@@ -121,6 +120,11 @@ int main(int argc, char** argv)
 	//     new OTPCPrimaryGeneratorAction(OTPCevent);
 	//   runManager->SetUserAction(OTPCgun);
 
+	G4UImanager* uiManager = G4UImanager::GetUIpointer();
+	uiManager->ApplyCommand("/run/verbose 2");
+	uiManager->ApplyCommand("/event/verbose 2");
+	uiManager->ApplyCommand("/tracking/verbose 2");
+
 	checkpoint;
 	// initialize G4 kernel
 	runManager->Initialize();
@@ -130,6 +134,8 @@ int main(int argc, char** argv)
 //   G4VisManager* visManager = new OTPCVisManager;
 	std::unique_ptr<G4VisManager> visManager = std::make_unique<G4VisExecutive>();
 	visManager->Initialize();
+
+	G4VVisManager::GetConcreteInstance()->SetDrawOverlapsFlag(true);
 #endif
 
 

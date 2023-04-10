@@ -33,17 +33,12 @@ using namespace std;
 
 OTPCRunAction::OTPCRunAction()
 {
-	timer = new G4Timer;
+	timer = std::make_unique<G4Timer>();
 
 	eventFile.open("event.csv", std::ios_base::out);
 
 	///////////////////////////////////////////////////////////////////////////////////	
 
-}
-
-OTPCRunAction::~OTPCRunAction()
-{
-	delete timer;
 }
 
 void OTPCRunAction::BeginOfRunAction(const G4Run*)

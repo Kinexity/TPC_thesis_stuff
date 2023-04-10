@@ -37,7 +37,12 @@ OTPCEventAction::OTPCEventAction(OTPCRunAction* RunAct)
 OTPCEventAction::~OTPCEventAction()
 {}
 
-void OTPCEventAction::BeginOfEventAction(const G4Event*) {}
+void OTPCEventAction::BeginOfEventAction(const G4Event*) {
+	EnergyDeposit.clear();
+	for (auto& elem : TotalEnergyDepositCrystal) {
+		elem = 0;
+	}
+}
 
 void OTPCEventAction::EndOfEventAction(const G4Event* evt)
 {

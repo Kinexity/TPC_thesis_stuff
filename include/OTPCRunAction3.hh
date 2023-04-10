@@ -35,7 +35,7 @@ class OTPCRunAction : public G4UserRunAction
 {
   public:
     OTPCRunAction();
-    ~OTPCRunAction();
+    ~OTPCRunAction() = default;
 
   public:
     void BeginOfRunAction(const G4Run*);
@@ -48,7 +48,7 @@ class OTPCRunAction : public G4UserRunAction
     
 private:
    
-    G4Timer* timer;
+    std::unique_ptr<G4Timer> timer;
     
     std::fstream eventFile;
     G4double                  x[5000];
