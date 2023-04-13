@@ -28,6 +28,12 @@
 
 using namespace std;
 
+inline std::string filename_string(std::string path_str) {
+    return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
+};
+
+#define _endl_ " (" << filename_string(__FILE__) << "; " << __LINE__ << ")" << '\n'
+#define checkpoint std::cout << "checkpoint" << _endl_
 
 OTPCPrimaryGeneratorAction::OTPCPrimaryGeneratorAction(OTPCRunAction* RunAct)
 :runAction(RunAct)
@@ -42,7 +48,12 @@ OTPCPrimaryGeneratorAction::OTPCPrimaryGeneratorAction(OTPCRunAction* RunAct)
     
     //////////Reading the input data for primary generator///////////
     
-    ifstream evenInputInformation("../../../particles3.data");
+    ifstream evenInputInformation;
+    evenInputInformation.open("../../../particles3.data");
+    if (!evenInputInformation.is_open()) {
+        std::cout << "\n\nNO EVENT INPUT INFORMATION FILE FOUND!!!" << _endl_;
+        exit(1);
+    }
     std::string header1, header2;
 
     evenInputInformation >> header1;
