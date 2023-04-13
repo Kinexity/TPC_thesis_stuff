@@ -43,11 +43,6 @@
           "name": "CMAKE_CXX_FLAGS",
           "value": "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /std:c++20",
           "type": "STRING"
-        },
-        {
-          "name": "CMAKE_BUILD_TYPE",
-          "value": "Release",
-          "type": "STRING"
         }
       ]
     },
@@ -77,7 +72,7 @@
     {
       "name": "x64-Release",
       "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
+      "configurationType": "Release",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeCommandArgs": "",
@@ -87,12 +82,7 @@
       "variables": [
         {
           "name": "Geant4_DIR",
-          "value": "C:\\Users\\26kub\\source\\libs\\geant4_10_05_p01\\out\\build\\x64-Release\\BuildProducts\\lib",
-          "type": "PATH"
-        },
-        {
-          "name": "PTL_DIR",
-          "value": "",
+          "value": "C:/Program Files/Geant4-11.0",
           "type": "PATH"
         }
       ]

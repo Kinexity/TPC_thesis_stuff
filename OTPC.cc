@@ -53,6 +53,7 @@
 #include <iomanip>
 #include <filesystem>
 #include <memory>
+#include <chrono>
 
 inline std::string filename_string(std::string path_str) {
 	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
@@ -65,12 +66,13 @@ inline std::string filename_string(std::string path_str) {
 
 int main(int argc, char** argv)
 {
+	auto start = std::chrono::high_resolution_clock::now();
 	// Create results directory
 
 	//if (std::filesystem::exists("~/results_TPC")) {
 	//
 	//}
-	G4int numberOfEvent = 10;
+	G4int numberOfEvent = 1000000;
 
 	if (argc > 1) {
 		numberOfEvent = std::stoi(argv[1]);
@@ -120,11 +122,6 @@ int main(int argc, char** argv)
 	//     new OTPCPrimaryGeneratorAction(OTPCevent);
 	//   runManager->SetUserAction(OTPCgun);
 
-	G4UImanager* uiManager = G4UImanager::GetUIpointer();
-	uiManager->ApplyCommand("/run/verbose 2");
-	uiManager->ApplyCommand("/event/verbose 2");
-	uiManager->ApplyCommand("/tracking/verbose 2");
-
 	checkpoint;
 	// initialize G4 kernel
 	runManager->Initialize();
@@ -144,7 +141,8 @@ int main(int argc, char** argv)
 
 	checkpoint;
 	runManager->BeamOn(numberOfEvent);
-
+	auto stop = std::chrono::high_resolution_clock::now();
+	std::cout << double((stop - start).count()) / 1e9 << '\n';
 	// job termination
 	return 0;
 }

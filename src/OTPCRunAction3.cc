@@ -64,11 +64,16 @@ void OTPCRunAction::EndOfRunAction(const G4Run*)
 void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>> EnergyDeposit, std::array<G4double, 20> EnergyGammaCrystals)
 {
 
-	for (auto& EnergyDeposit_i : EnergyDeposit) {
+	//for (auto& EnergyDeposit_i : EnergyDeposit) {
+	//
+	//	if (EnergyDeposit_i[3] > 0) {
+	//		eventFile << EnergyDeposit_i[0] << ',' << EnergyDeposit_i[1] << ',' << EnergyDeposit_i[2] << ',' << EnergyDeposit_i[3] << '\n';
+	//	}
+	//}
 
-		if (EnergyDeposit_i[3] > 0) {
-			eventFile << EnergyDeposit_i[0] << ',' << EnergyDeposit_i[1] << ',' << EnergyDeposit_i[2] << ',' << EnergyDeposit_i[3] << '\n';
-		}
+	eventIndex++;
+	if (eventIndex % 10000 == 0) {
+		std::cout << eventIndex << '\n';
 	}
 	eventFile << "\n\n";
 	for (auto& EnergyDepositOneCrystal : EnergyGammaCrystals) {

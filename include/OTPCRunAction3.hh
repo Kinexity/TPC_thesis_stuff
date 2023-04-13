@@ -56,6 +56,7 @@ private:
     G4double                  z[5000];
     G4double                  E[5000];
    
+    uint32_t eventIndex;
 };
 
 #endif

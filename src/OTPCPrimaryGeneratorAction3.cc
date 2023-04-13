@@ -42,7 +42,7 @@ OTPCPrimaryGeneratorAction::OTPCPrimaryGeneratorAction(OTPCRunAction* RunAct)
     
     //////////Reading the input data for primary generator///////////
     
-    ifstream evenInputInformation("../particles3.data");
+    ifstream evenInputInformation("../../../particles3.data");
     std::string header1, header2;
 
     evenInputInformation >> header1;
