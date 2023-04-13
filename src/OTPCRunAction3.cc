@@ -35,22 +35,22 @@ OTPCRunAction::OTPCRunAction()
 {
 	timer = std::make_unique<G4Timer>();
 
-	eventFile.open("event.csv", std::ios_base::out);
+	eventFile.open("event.bin", std::ios_base::out | std::ios_base::binary);
 
 	///////////////////////////////////////////////////////////////////////////////////	
 
 }
 
-void OTPCRunAction::BeginOfRunAction(const G4Run*)
+void OTPCRunAction::BeginOfRunAction(const G4Run* rn)
 {
 	//Start CPU timer
 	timer->Start();
-
+	eventData.resize(rn->GetNumberOfEventToBeProcessed() * 20);
 }
 
 void OTPCRunAction::EndOfRunAction(const G4Run*)
 {
-
+	eventFile.write((const char*)eventData.data(), eventData.size() * sizeof(G4double));
 	eventFile.close();
 
 	//Stop timer and get CPU time
@@ -61,18 +61,25 @@ void OTPCRunAction::EndOfRunAction(const G4Run*)
 
 }
 
-void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>> EnergyDeposit, std::array<G4double, 20> EnergyGammaCrystals)
+void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>>& EnergyDeposit, std::array<G4double, 20>& EnergyGammaCrystals)
 {
 
-	for (auto& EnergyDeposit_i : EnergyDeposit) {
-
-		if (EnergyDeposit_i[3] > 0) {
-			eventFile << EnergyDeposit_i[0] << ',' << EnergyDeposit_i[1] << ',' << EnergyDeposit_i[2] << ',' << EnergyDeposit_i[3] << '\n';
-		}
+	//for (auto& EnergyDeposit_i : EnergyDeposit) {
+	//
+	//	if (EnergyDeposit_i[3] > 0) {
+	//		//eventFile << EnergyDeposit_i[0] << ',' << EnergyDeposit_i[1] << ',' << EnergyDeposit_i[2] << ',' << EnergyDeposit_i[3] << '\n';
+	//	}
+	//}
+	//eventFile << "\n\n";
+	std::copy(EnergyGammaCrystals.begin(), EnergyGammaCrystals.end(), eventData.begin() + eventIndex * 20);
+	eventIndex++;
+	if (eventIndex % 10000 == 0) {
+		std::cout << eventIndex << '\n';
 	}
-	eventFile << "\n\n";
-	for (auto& EnergyDepositOneCrystal : EnergyGammaCrystals) {
-		eventFile << EnergyDepositOneCrystal << '\t';
-	}
-	eventFile << "\n\n";
+	//std::stringstream ss;
+	//for (auto& EnergyDepositOneCrystal : EnergyGammaCrystals) {
+	//	ss << EnergyDepositOneCrystal << '\t';
+	//}
+	//ss << "\n";
+	//eventFile << ss.str();
 }

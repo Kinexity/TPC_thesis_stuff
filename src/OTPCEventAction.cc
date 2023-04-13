@@ -15,7 +15,7 @@
 
 #include "OTPCEventAction.hh"
 
-#include "OTPCRunAction.hh"
+#include "OTPCRunAction3.hh"
 
 #include "G4Event.hh"
 #include "G4EventManager.hh"
@@ -29,6 +29,12 @@
 #include "fstream"
 #include "iomanip"
 
+inline std::string filename_string(std::string path_str) {
+	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
+};
+
+#define _endl_ " (" << filename_string(__FILE__) << "; " << __LINE__ << ")" << '\n'
+#define checkpoint std::cout << "checkpoint" << _endl_
 
 OTPCEventAction::OTPCEventAction(OTPCRunAction* RunAct)
 	:runAction(RunAct)
@@ -38,10 +44,10 @@ OTPCEventAction::~OTPCEventAction()
 {}
 
 void OTPCEventAction::BeginOfEventAction(const G4Event*) {
-	EnergyDeposit.clear();
-	for (auto& elem : TotalEnergyDepositCrystal) {
-		elem = 0;
-	}
+	//EnergyDeposit.clear();
+	//for (auto& elem : TotalEnergyDepositCrystal) {
+	//	elem = 0;
+	//}
 }
 
 void OTPCEventAction::EndOfEventAction(const G4Event* evt)

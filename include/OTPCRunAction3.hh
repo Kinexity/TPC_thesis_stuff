@@ -33,29 +33,32 @@ class G4Timer;
 
 class OTPCRunAction : public G4UserRunAction
 {
-  public:
-    OTPCRunAction();
-    ~OTPCRunAction() = default;
+public:
+	OTPCRunAction();
+	~OTPCRunAction() = default;
 
-  public:
-    void BeginOfRunAction(const G4Run*);
-    void EndOfRunAction(const G4Run*);
+public:
+	void BeginOfRunAction(const G4Run*);
+	void EndOfRunAction(const G4Run*);
 
 
-    void fillOut(std::vector<std::array<G4double, 4>> EnergyDeposit, std::array<G4double, 20> EnergyGammaCrystals);
-    
-    
-    
+	void fillOut(std::vector<std::array<G4double, 4>>& EnergyDeposit, std::array<G4double, 20>& EnergyGammaCrystals);
+
+
+
 private:
-   
-    std::unique_ptr<G4Timer> timer;
-    
-    std::fstream eventFile;
-    G4double                  x[5000];
-    G4double                  y[5000];
-    G4double                  z[5000];
-    G4double                  E[5000];
-   
+
+	std::unique_ptr<G4Timer> timer;
+
+	std::fstream eventFile;
+	G4double                  x[5000];
+	G4double                  y[5000];
+	G4double                  z[5000];
+	G4double                  E[5000];
+
+	std::vector<G4double> eventData;
+
+	uint32_t eventIndex = 0;
 };
 
 #endif
