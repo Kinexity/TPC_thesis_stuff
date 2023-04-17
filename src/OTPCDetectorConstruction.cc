@@ -712,7 +712,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	}
 
 	// crystal logical volume
-	G4LogicalVolume* crystalVolumeLogical = new G4LogicalVolume(crystalVolumeSolid, CeBr3, "crystalVolumeLogical");
+	G4LogicalVolume* crystalVolumeLogical = new G4LogicalVolume(crystalVolumeSolid, scintillatorMaterial, "crystalVolumeLogical");
 
 	// crystal placement in detector
 	G4VPhysicalVolume* physiCrystal = new G4PVPlacement(0, G4ThreeVector(), crystalVolumeLogical, "physiCrystal", gammaDetectorVolumeLogical, false, 0);

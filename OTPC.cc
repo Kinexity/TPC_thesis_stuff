@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 		std::filesystem::create_directory(resultsDirectoryPath);
 	}
 
-	G4int numberOfEvent = 10000;
+	G4int numberOfEvent = 1000000;
 
 	if (argc > 1) {
 		numberOfEvent = std::stoi(argv[1]);
@@ -123,11 +123,6 @@ int main(int argc, char** argv) {
 		OTPCgun = new OTPCPrimaryGeneratorAction(OTPCrun);
 	runManager->SetUserAction(OTPCgun);
 
-	//   // set mandatory user action class
-	//   OTPCPrimaryGeneratorAction* OTPCgun =
-	//     new OTPCPrimaryGeneratorAction(OTPCevent);
-	//   runManager->SetUserAction(OTPCgun);
-
 	checkpoint;
 	// initialize G4 kernel
 	runManager->Initialize();
@@ -160,15 +155,18 @@ int main(int argc, char** argv) {
 		5000 * keV };
 
 	for (auto energy : energies) {
-		G4String pname = "proton";
-		auto eventFileName = std::format("event_{}keV_{}_{}cm_{}_{}.csv", 
-			energy / keV, 
-			OTPCdetector->getScintillatorType(), 
-			OTPCdetector->getCrystalDepth() / cm, 
+		G4String pname = "gamma";
+		auto partialFileName = std::format("event_{}keV_{}_{}cm_{}_{}_",
+			energy / keV,
+			OTPCdetector->getScintillatorType(),
+			OTPCdetector->getCrystalDepth() / cm,
 			OTPCphysList->getPhysicsListName(),
-			OTPCphysList->GetCutValue(pname));
-		auto eventFilePath = resultsDirectoryPath / eventFileName;
-		OTPCrun->setEventFilePath(eventFilePath);
+			OTPCphysList->GetCutValue(pname));;
+		auto eventTotalDepositFileName = partialFileName + "totalDeposit.csv";
+		auto eventStepsDepositFileName = partialFileName + "stepsDeposit.csv";
+		auto eventTotalDepositFilePath = resultsDirectoryPath / eventTotalDepositFileName;
+		auto eventStepsDepositFilePath = resultsDirectoryPath / eventStepsDepositFileName;
+		OTPCrun->setEventFilePath(eventTotalDepositFilePath, eventStepsDepositFilePath);
 		// start a run
 		checkpoint;
 		OTPCgun->getEnergy()[0] = energy; //set energy for each run

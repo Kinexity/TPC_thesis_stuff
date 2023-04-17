@@ -42,46 +42,46 @@ OTPCRunAction::OTPCRunAction()
 
 void OTPCRunAction::BeginOfRunAction(const G4Run*)
 {
-	eventFile.open(eventFilePath, std::ios_base::out);
+	eventTotalDepositFile.open(eventTotalDepositFilePath, std::ios_base::out);
+	eventStepsDepositFile.open(eventStepsDepositFilePath, std::ios_base::out);
 	//Start CPU timer
 	timer->Start();
-
+	eventIndex = 0;
 }
 
 void OTPCRunAction::EndOfRunAction(const G4Run*)
 {
 
-	eventFile.close();
-
+	eventTotalDepositFile.close();
+	eventStepsDepositFile.close();
 	//Stop timer and get CPU time
 	timer->Stop();
-	G4double cputime = timer->GetUserElapsed();
+	G4double cputime = timer->GetRealElapsed();
 	cout << " CPU time = " << cputime << " s" << endl;
 
 
 }
 
-void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>> EnergyDeposit, std::array<G4double, 20> EnergyGammaCrystals)
+void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>>& EnergyDeposit, std::array<G4double, 20>& EnergyGammaCrystals)
 {
+	eventStepsDepositFile << eventIndex << '\t' << EnergyDeposit.size() << '\n';
+	for (auto& EnergyDeposit_i : EnergyDeposit) {
+		eventStepsDepositFile << EnergyDeposit_i[0] << ',' << EnergyDeposit_i[1] << ',' << EnergyDeposit_i[2] << ',' << EnergyDeposit_i[3] << '\n';
+	}
+	eventStepsDepositFile << '\n';
 
-	//for (auto& EnergyDeposit_i : EnergyDeposit) {
-	//
-	//	if (EnergyDeposit_i[3] > 0) {
-	//		eventFile << EnergyDeposit_i[0] << ',' << EnergyDeposit_i[1] << ',' << EnergyDeposit_i[2] << ',' << EnergyDeposit_i[3] << '\n';
-	//	}
-	//}
+	for (auto& EnergyDepositOneCrystal : EnergyGammaCrystals) {
+		eventTotalDepositFile << EnergyDepositOneCrystal << '\t';
+	}
+	eventTotalDepositFile << "\n";
 
 	eventIndex++;
 	if (eventIndex % 10000 == 0) {
 		std::cout << eventIndex << '\n';
 	}
-	eventFile << "\n\n";
-	for (auto& EnergyDepositOneCrystal : EnergyGammaCrystals) {
-		eventFile << EnergyDepositOneCrystal << '\t';
-	}
-	eventFile << "\n\n";
 }
 
-void OTPCRunAction::setEventFilePath(std::filesystem::path p) {
-	eventFilePath = p;
+void OTPCRunAction::setEventFilePath(std::filesystem::path totalP, std::filesystem::path stepsP) {
+	eventTotalDepositFilePath = totalP;
+	eventStepsDepositFilePath = stepsP;
 }

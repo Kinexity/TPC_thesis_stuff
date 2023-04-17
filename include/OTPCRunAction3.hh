@@ -43,23 +43,23 @@ class OTPCRunAction : public G4UserRunAction
     void EndOfRunAction(const G4Run*);
 
 
-    void fillOut(std::vector<std::array<G4double, 4>> EnergyDeposit, std::array<G4double, 20> EnergyGammaCrystals);
+    void fillOut(std::vector<std::array<G4double, 4>>& EnergyDeposit, std::array<G4double, 20>& EnergyGammaCrystals);
     
     
-    void setEventFilePath(std::filesystem::path p);
+    void setEventFilePath(std::filesystem::path totalP, std::filesystem::path stepsP);
 private:
    
     std::unique_ptr<G4Timer> timer;
     
-    std::fstream eventFile;
-    G4double                  x[5000];
-    G4double                  y[5000];
-    G4double                  z[5000];
-    G4double                  E[5000];
+    std::fstream 
+        eventTotalDepositFile,
+        eventStepsDepositFile;
    
     uint32_t eventIndex;
 
-    std::filesystem::path eventFilePath;
+    std::filesystem::path 
+        eventTotalDepositFilePath,
+        eventStepsDepositFilePath;
 };
 
 #endif

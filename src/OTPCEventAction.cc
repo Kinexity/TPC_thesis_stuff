@@ -15,7 +15,7 @@
 
 #include "OTPCEventAction.hh"
 
-#include "OTPCRunAction.hh"
+#include "OTPCRunAction3.hh"
 
 #include "G4Event.hh"
 #include "G4EventManager.hh"
@@ -61,7 +61,7 @@ void OTPCEventAction::add_E_i(G4int nCrystal, G4double edep)
 }
 
 void OTPCEventAction::addEdep(G4double Edep, G4double x, G4double y, G4double z) {
-	EnergyDeposit.push_back({ x,y,z,Edep });
+	EnergyDeposit.push_back({ Edep, x, y, z });
 	//G4cout<<nstep<<G4endl;
 
 }

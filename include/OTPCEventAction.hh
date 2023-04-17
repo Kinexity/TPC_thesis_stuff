@@ -40,7 +40,7 @@ public:
 
 private:
 	OTPCRunAction* runAction;
-	G4int                     Range;
+	G4int Range;
 
 	std::vector<std::array<G4double, 4>>
 		EnergyDeposit;

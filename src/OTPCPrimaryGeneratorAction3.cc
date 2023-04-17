@@ -148,7 +148,7 @@ void OTPCPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 
 	FILE* metaFile = fopen("metadata.txt", "a");
-	fprintf(metaFile, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", E[0], E[1], E[2], x, y, z, theta[0], theta[1], theta[3], phi[0], phi[1], phi[2]);
+	fprintf(metaFile, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", E[0] / keV, E[1], E[2], x, y, z, theta[0], theta[1], theta[3], phi[0], phi[1], phi[2]);
 	fclose(metaFile);
 
 	// particle types
@@ -182,7 +182,7 @@ void OTPCPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 			particleGun->SetParticlePosition(G4ThreeVector(x * mm, y * mm, z * mm));
 			particleGun->SetParticleMomentumDirection(momentumDirection);
-			particleGun->SetParticleEnergy(E[i] * keV);
+			particleGun->SetParticleEnergy(E[i]);
 			particleGun->GeneratePrimaryVertex(anEvent);
 
 			//G4cout<<theta[i]<<" "<<phi[i]<<" "<<E[i]<<" lauched"<<G4endl;
