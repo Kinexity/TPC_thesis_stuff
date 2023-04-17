@@ -25,6 +25,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <filesystem>
 #include "G4Timer.hh"
 
 class G4Run;
@@ -45,7 +46,7 @@ class OTPCRunAction : public G4UserRunAction
     void fillOut(std::vector<std::array<G4double, 4>> EnergyDeposit, std::array<G4double, 20> EnergyGammaCrystals);
     
     
-    
+    void setEventFilePath(std::filesystem::path p);
 private:
    
     std::unique_ptr<G4Timer> timer;
@@ -57,6 +58,8 @@ private:
     G4double                  E[5000];
    
     uint32_t eventIndex;
+
+    std::filesystem::path eventFilePath;
 };
 
 #endif

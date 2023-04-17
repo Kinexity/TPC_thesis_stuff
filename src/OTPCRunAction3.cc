@@ -35,7 +35,6 @@ OTPCRunAction::OTPCRunAction()
 {
 	timer = std::make_unique<G4Timer>();
 
-	eventFile.open("event.csv", std::ios_base::out);
 
 	///////////////////////////////////////////////////////////////////////////////////	
 
@@ -43,6 +42,7 @@ OTPCRunAction::OTPCRunAction()
 
 void OTPCRunAction::BeginOfRunAction(const G4Run*)
 {
+	eventFile.open(eventFilePath, std::ios_base::out);
 	//Start CPU timer
 	timer->Start();
 
@@ -80,4 +80,8 @@ void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>> EnergyDeposit, 
 		eventFile << EnergyDepositOneCrystal << '\t';
 	}
 	eventFile << "\n\n";
+}
+
+void OTPCRunAction::setEventFilePath(std::filesystem::path p) {
+	eventFilePath = p;
 }

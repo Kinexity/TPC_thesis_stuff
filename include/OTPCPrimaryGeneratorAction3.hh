@@ -11,6 +11,7 @@
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ParticleGun.hh"
 #include "globals.hh"
+#include <array>
 
 
 class G4Event;
@@ -20,22 +21,22 @@ extern std::ifstream eventInputFile;
 
 class OTPCPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
-  public:
-    OTPCPrimaryGeneratorAction(OTPCRunAction*);
-    ~OTPCPrimaryGeneratorAction();
+public:
+	OTPCPrimaryGeneratorAction(OTPCRunAction*);
+	~OTPCPrimaryGeneratorAction() = default;
 
-  public:
-    void GeneratePrimaries(G4Event* anEvent);
-    G4ParticleGun* GetParticleGun() { return particleGun;} ;
-          
-  private:
-    OTPCRunAction*            runAction;
-    G4ParticleGun*  particleGun;
-    
-        
-    G4double E[3], theta[3], phi[3];
-    G4int type[3];
-    G4double x,y,z;
+public:
+	void GeneratePrimaries(G4Event* anEvent);
+	G4ParticleGun* GetParticleGun() { return particleGun.get(); };
+	std::array<G4double, 3>& getEnergy();
+private:
+	OTPCRunAction* runAction;
+	std::unique_ptr<G4ParticleGun> particleGun;
+
+
+	std::array<G4double, 3> E, theta, phi;
+	G4int type[3];
+	G4double x, y, z;
 
 };
 

@@ -2,7 +2,7 @@
 # Setup the project
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(OTPC)
-
+set(CMAKE_CXX_STANDARD 20)
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
 # You can set WITH_GEANT4_UIVIS to OFF via the command line or ccmake/cmake-gui
@@ -36,7 +36,6 @@ list(REMOVE_ITEM sources3 ${PROJECT_SOURCE_DIR}/src/OTPCRunAction.cc)
 list(REMOVE_ITEM sources3 ${PROJECT_SOURCE_DIR}/src/OTPCPrimaryGeneratorAction.cc)
 list(REMOVE_ITEM sources3 ${PROJECT_SOURCE_DIR}/src/OTPCPrimaryGeneratorAction2.cc)
 
-list(REMOVE_ITEM headers3 ${PROJECT_SOURCE_DIR}/include/PhysListEmStandard.hh)
 list(REMOVE_ITEM headers3 ${PROJECT_SOURCE_DIR}/include/OTPCRunAction.hh)
 list(REMOVE_ITEM headers3 ${PROJECT_SOURCE_DIR}/include/OTPCPrimaryGeneratorAction.hh)
 list(REMOVE_ITEM headers3 ${PROJECT_SOURCE_DIR}/include/OTPCPrimaryGeneratorAction2.hh)

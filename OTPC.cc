@@ -54,6 +54,7 @@
 #include <filesystem>
 #include <memory>
 #include <chrono>
+#include <format>
 
 inline std::string filename_string(std::string path_str) {
 	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
@@ -64,15 +65,16 @@ inline std::string filename_string(std::string path_str) {
 
 //using namespace std;
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
 	auto start = std::chrono::high_resolution_clock::now();
-	// Create results directory
 
-	//if (std::filesystem::exists("~/results_TPC")) {
-	//
-	//}
-	G4int numberOfEvent = 1000000;
+	// Create results directory
+	auto resultsDirectoryPath = std::filesystem::current_path() / "results_TPC";
+	if (!std::filesystem::exists(resultsDirectoryPath)) {
+		std::filesystem::create_directory(resultsDirectoryPath);
+	}
+
+	G4int numberOfEvent = 10000;
 
 	if (argc > 1) {
 		numberOfEvent = std::stoi(argv[1]);
@@ -86,6 +88,7 @@ int main(int argc, char** argv)
 	CLHEP::HepRandom::setTheSeed(Seed, Lux);
 
 	checkpoint;
+#ifdef  WIN32
 	_putenv_s("G4ENSDFSTATEDATA", "C:\\Program Files (x86)\\Geant4 10.5\\data\\G4ENSDFSTATE2.2");
 	system("set G4ENSDFSTATEDATA");
 	_putenv_s("G4LEVELGAMMADATA", "C:\\Program Files(x86)\\Geant4 10.5\\data\\PhotonEvaporation5.3");
@@ -94,13 +97,16 @@ int main(int argc, char** argv)
 	system("set G4RADIOACTIVEDATA");
 	_putenv_s("G4LEDATA", "C:\\Program Files (x86)\\Geant4 10.5\\data\\G4EMLOW7.7");
 	system("set G4LEDATA");
+#endif //  WIN32
 	// construct the default run manager
 	std::unique_ptr<G4RunManager> runManager = std::make_unique<G4RunManager>();
 
 	checkpoint;
 	// set mandatory initialization classes
-	runManager->SetUserInitialization(new OTPCDetectorConstruction);
-	runManager->SetUserInitialization(new OTPCPhysicsList);
+	auto OTPCdetector = new OTPCDetectorConstruction;
+	runManager->SetUserInitialization(OTPCdetector);
+	auto OTPCphysList = new OTPCPhysicsList;
+	runManager->SetUserInitialization(OTPCphysList);
 
 	checkpoint;
 	// set aditional user action classes
@@ -135,12 +141,39 @@ int main(int argc, char** argv)
 	G4VVisManager::GetConcreteInstance()->SetDrawOverlapsFlag(true);
 #endif
 
+	const std::vector<G4double> energies = {
+		100 * keV,
+		200 * keV,
+		300 * keV,
+		400 * keV,
+		500 * keV,
+		600 * keV,
+		700 * keV,
+		800 * keV,
+		900 * keV,
+		1000 * keV,
+		1250 * keV,
+		1500 * keV,
+		2000 * keV,
+		3000 * keV,
+		4000 * keV,
+		5000 * keV };
 
-
-	// start a run
-
-	checkpoint;
-	runManager->BeamOn(numberOfEvent);
+	for (auto energy : energies) {
+		G4String pname = "proton";
+		auto eventFileName = std::format("event_{}keV_{}_{}cm_{}_{}.csv", 
+			energy / keV, 
+			OTPCdetector->getScintillatorType(), 
+			OTPCdetector->getCrystalDepth() / cm, 
+			OTPCphysList->getPhysicsListName(),
+			OTPCphysList->GetCutValue(pname));
+		auto eventFilePath = resultsDirectoryPath / eventFileName;
+		OTPCrun->setEventFilePath(eventFilePath);
+		// start a run
+		checkpoint;
+		OTPCgun->getEnergy()[0] = energy; //set energy for each run
+		runManager->BeamOn(numberOfEvent);
+	}
 	auto stop = std::chrono::high_resolution_clock::now();
 	std::cout << double((stop - start).count()) / 1e9 << '\n';
 	// job termination

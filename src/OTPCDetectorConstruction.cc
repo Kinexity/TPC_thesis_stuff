@@ -17,7 +17,6 @@
 #include "globals.hh"
 #include "G4Transform3D.hh"
 #include "G4NistManager.hh"
-#include "G4SystemOfUnits.hh"
 
 #include "G4Material.hh"
 #include "G4MaterialTable.hh"
@@ -47,11 +46,12 @@ using namespace std;
 // Global file with the events
 ifstream geoInputFile;
 
-OTPCDetectorConstruction::OTPCDetectorConstruction()
-{ }
+inline std::string filename_string(std::string path_str) {
+	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
+};
 
-OTPCDetectorConstruction::~OTPCDetectorConstruction()
-{ }
+#define _endl_ " (" << filename_string(__FILE__) << "; " << __LINE__ << ")" << '\n'
+#define checkpoint std::cout << "checkpoint" << _endl_
 
 G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 {
@@ -197,6 +197,10 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	Ge->AddIsotope(Ge73, abundance = 7.73 * perCent);
 	Ge->AddIsotope(Ge74, abundance = 36.28 * perCent);
 	Ge->AddIsotope(Ge76, abundance = 7.61 * perCent);
+
+	// La
+	a = 138.91 * g / mole;
+	G4Element* La = new G4Element(name = "Lanthanum", "La", 57, a);
 
 	//
 	// define simple materials
@@ -437,10 +441,21 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	CeBr3->AddElement(Ce, natoms = 1);
 	CeBr3->AddElement(Br, natoms = 3);
 
+	// LaBr3
+	density = 5.06 * g / cm3;
+	G4Material* LaBr3 = new G4Material(name = "LaBr3", density, ncomponents = 2);
+	LaBr3->AddElement(La, natoms = 1);
+	LaBr3->AddElement(Br, natoms = 3);
+
 	// GAS OTPC 
 	//////////Reading the input data for primary generator///////////
 
 	ifstream geoInputFile("../../../geo.data");
+
+	if (!geoInputFile.is_open()) {
+		std::cout << "\n\nNO GEO INPUT INFORMATION FILE FOUND!!!" << _endl_;
+		exit(1);
+	}
 
 	geoInputFile >> header1;
 	geoInputFile >> gas[0] >> gas[1] >> gas[2];
@@ -644,9 +659,10 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 
 	// detector dimensions
 	G4double crystalSideLenght = 4.65 * cm;
-	G4double crystalDepth = 10 * cm;
+	//crystal depth define as class constant
 	G4double reflectiveCoatingThickness = 0.25 * mm;
 	G4double externalCoverThickness = 1.5 * mm;
+
 	G4double gammaDetectorSideHalfLenght = crystalSideLenght / 2 + reflectiveCoatingThickness + externalCoverThickness;
 	G4double gammaDetectorDepthHalfLenght = crystalDepth / 2 + reflectiveCoatingThickness + externalCoverThickness;
 
@@ -685,6 +701,15 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 
 	// crystal solid volume
 	G4Box* crystalVolumeSolid = new G4Box("crystalVolumeSolid", crystalSideLenght / 2, crystalSideLenght / 2, crystalDepth / 2);
+
+	G4Material* scintillatorMaterial;
+
+	if (scintillatorType == "CeBr3") {
+		scintillatorMaterial = CeBr3;
+	}
+	else if (scintillatorType == "LaBr3") {
+		scintillatorMaterial = LaBr3;
+	}
 
 	// crystal logical volume
 	G4LogicalVolume* crystalVolumeLogical = new G4LogicalVolume(crystalVolumeSolid, CeBr3, "crystalVolumeLogical");
@@ -783,4 +808,12 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	//
 
 	return physiWorld;
+}
+
+const G4double OTPCDetectorConstruction::getCrystalDepth() {
+	return crystalDepth;
+}
+
+const std::string OTPCDetectorConstruction::getScintillatorType() {
+	return scintillatorType;
 }

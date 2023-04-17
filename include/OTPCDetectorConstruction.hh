@@ -24,30 +24,34 @@
 
 #include "G4ThreeVector.hh"
 #include "G4VUserDetectorConstruction.hh"
+#include "G4SystemOfUnits.hh"
 
 class G4VPhysicalVolume;
 class F02ElectricFieldSetup;
 
 class OTPCDetectorConstruction : public G4VUserDetectorConstruction
 {
-  public:
-    OTPCDetectorConstruction();
-    ~OTPCDetectorConstruction();
+public:
+	OTPCDetectorConstruction() = default;
+	~OTPCDetectorConstruction() = default;
 
-  public:
-     G4VPhysicalVolume* Construct();
-     
-  private:
-      F02ElectricFieldSetup* fEmFieldSetup;
-      G4String              header1, header2, header3;
-      G4int                 gas[3];
-      G4double              fgas[3];
-      G4double              T;
-      G4double              P;
-      G4double              E;
-      G4double              d;
+public:
+	G4VPhysicalVolume* Construct();
+	const G4double getCrystalDepth();
+	const std::string getScintillatorType();
+private:
+	F02ElectricFieldSetup* fEmFieldSetup;
+	G4String              header1, header2, header3;
+	G4int                 gas[3];
+	G4double              fgas[3];
+	G4double              T;
+	G4double              P;
+	G4double              E;
+	G4double              d;
 
 
+	const G4double crystalDepth = 10 * cm;
+	const std::string scintillatorType = "CeBr3";
 };
 
 #endif

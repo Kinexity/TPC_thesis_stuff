@@ -157,10 +157,6 @@ void OTPCPhysicsList::ConstructProcess()
 
 void OTPCPhysicsList::AddOTPCPhysicsList()
 {
-	//G4String name="emlivermore";
-	G4String name = "local";
-	//G4String name="emstandard_opt3";
-	//G4String name="empenelope";
 
 	if (name == fEmName) return;
 
@@ -351,4 +347,8 @@ void OTPCPhysicsList::AddIonGasModels() {
 
 		}
 	}
+}
+
+std::string OTPCPhysicsList::getPhysicsListName() {
+	return name;
 }

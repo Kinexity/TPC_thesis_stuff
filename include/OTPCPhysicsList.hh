@@ -46,30 +46,36 @@ class OTPCPhysicsListMessenger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class OTPCPhysicsList: public G4VModularPhysicsList
+class OTPCPhysicsList : public G4VModularPhysicsList
 {
-  public:
-    OTPCPhysicsList();
-   ~OTPCPhysicsList();
+public:
+	OTPCPhysicsList();
+	~OTPCPhysicsList();
 
-    virtual void ConstructParticle();
+	virtual void ConstructParticle();
 
-    void AddOTPCPhysicsList();
-    virtual void ConstructProcess();
-    void AddDecay();
-    void AddRadioactiveDecay();
-    void AddStepMax();
+	void AddOTPCPhysicsList();
+	virtual void ConstructProcess();
+	void AddDecay();
+	void AddRadioactiveDecay();
+	void AddStepMax();
 
-    void AddIonGasModels();
-    
-    StepMax* GetStepMaxProcess() {return fStepMaxProcess;};
+	void AddIonGasModels();
 
-  private:
-    G4String               fEmName;
-    G4VPhysicsConstructor* fEmOTPCPhysicsList;    
-    static G4ThreadLocal StepMax* fStepMaxProcess;
+	StepMax* GetStepMaxProcess() { return fStepMaxProcess; };
 
-    OTPCPhysicsListMessenger*  fMessenger;
+	std::string getPhysicsListName();
+private:
+	G4String               fEmName;
+	G4VPhysicsConstructor* fEmOTPCPhysicsList;
+	static G4ThreadLocal StepMax* fStepMaxProcess;
+
+	OTPCPhysicsListMessenger* fMessenger;
+
+	//G4String name="emlivermore";
+	G4String name = "local";
+	//G4String name="emstandard_opt3";
+	//G4String name="empenelope";
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
