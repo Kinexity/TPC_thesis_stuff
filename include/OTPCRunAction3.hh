@@ -53,7 +53,9 @@ private:
     
     std::fstream 
         eventTotalDepositFile,
-        eventStepsDepositFile;
+        eventStepsDepositFile,
+        eventTotalDepositFileBinary,
+        eventStepsDepositFileBinary;
    
     uint32_t eventIndex;
 

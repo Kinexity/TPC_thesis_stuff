@@ -42,8 +42,10 @@ OTPCRunAction::OTPCRunAction()
 
 void OTPCRunAction::BeginOfRunAction(const G4Run*)
 {
-	eventTotalDepositFile.open(eventTotalDepositFilePath, std::ios_base::out);
-	eventStepsDepositFile.open(eventStepsDepositFilePath, std::ios_base::out);
+	eventTotalDepositFile.open(eventTotalDepositFilePath.string() + ".csv", std::ios_base::out | std::ios_base::trunc);
+	eventStepsDepositFile.open(eventStepsDepositFilePath.string() + ".csv", std::ios_base::out | std::ios_base::trunc);
+	eventTotalDepositFileBinary.open(eventTotalDepositFilePath.string() + ".bin", std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+	//eventStepsDepositFileBinary.open(eventStepsDepositFilePath.string() + ".bin", std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
 	//Start CPU timer
 	timer->Start();
 	eventIndex = 0;
@@ -54,6 +56,8 @@ void OTPCRunAction::EndOfRunAction(const G4Run*)
 
 	eventTotalDepositFile.close();
 	eventStepsDepositFile.close();
+	eventTotalDepositFileBinary.close();
+	//eventStepsDepositFileBinary.close();
 	//Stop timer and get CPU time
 	timer->Stop();
 	G4double cputime = timer->GetRealElapsed();
@@ -64,11 +68,14 @@ void OTPCRunAction::EndOfRunAction(const G4Run*)
 
 void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>>& EnergyDeposit, std::array<G4double, 20>& EnergyGammaCrystals)
 {
-	eventStepsDepositFile << eventIndex << '\t' << EnergyDeposit.size() << '\n';
-	for (auto& EnergyDeposit_i : EnergyDeposit) {
-		eventStepsDepositFile << EnergyDeposit_i[0] << ',' << EnergyDeposit_i[1] << ',' << EnergyDeposit_i[2] << ',' << EnergyDeposit_i[3] << '\n';
+	if (EnergyDeposit.size() > 0) {
+		eventStepsDepositFile << eventIndex << '\t' << EnergyDeposit.size() << '\n';
+		for (auto& EnergyDeposit_i : EnergyDeposit) {
+			eventStepsDepositFile << EnergyDeposit_i[0] << ',' << EnergyDeposit_i[1] << ',' << EnergyDeposit_i[2] << ',' << EnergyDeposit_i[3] << '\n';
+		}
 	}
-	eventStepsDepositFile << '\n';
+
+	eventTotalDepositFileBinary.write((char*)EnergyGammaCrystals.data(), EnergyGammaCrystals.size() * sizeof(G4double));
 
 	for (auto& EnergyDepositOneCrystal : EnergyGammaCrystals) {
 		eventTotalDepositFile << EnergyDepositOneCrystal << '\t';

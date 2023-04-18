@@ -162,8 +162,8 @@ int main(int argc, char** argv) {
 			OTPCdetector->getCrystalDepth() / cm,
 			OTPCphysList->getPhysicsListName(),
 			OTPCphysList->GetCutValue(pname));;
-		auto eventTotalDepositFileName = partialFileName + "totalDeposit.csv";
-		auto eventStepsDepositFileName = partialFileName + "stepsDeposit.csv";
+		auto eventTotalDepositFileName = partialFileName + "totalDeposit";
+		auto eventStepsDepositFileName = partialFileName + "stepsDeposit";
 		auto eventTotalDepositFilePath = resultsDirectoryPath / eventTotalDepositFileName;
 		auto eventStepsDepositFilePath = resultsDirectoryPath / eventStepsDepositFileName;
 		OTPCrun->setEventFilePath(eventTotalDepositFilePath, eventStepsDepositFilePath);
