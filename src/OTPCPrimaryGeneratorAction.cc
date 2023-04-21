@@ -3,7 +3,7 @@
 // V. Guadilla 2021
 /////////////////////////////////////////////////////////////////////////
 
-#include "OTPCPrimaryGeneratorAction3.hh"
+#include "OTPCPrimaryGeneratorAction.hh"
 
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
@@ -24,7 +24,7 @@
 
 #include "G4SystemOfUnits.hh"
 
-#include "OTPCRunAction3.hh"
+#include "OTPCRunAction.hh"
 
 using namespace std;
 

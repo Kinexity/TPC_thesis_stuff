@@ -15,7 +15,7 @@
 
 #include "OTPCEventAction.hh"
 
-#include "OTPCRunAction3.hh"
+#include "OTPCRunAction.hh"
 
 #include "G4Event.hh"
 #include "G4EventManager.hh"
