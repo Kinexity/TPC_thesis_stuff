@@ -24,7 +24,7 @@
 
 #include "G4SystemOfUnits.hh"
 
-#include "OTPCRunAction.hh"
+#include "OTPCRunAction3.hh"
 
 using namespace std;
 

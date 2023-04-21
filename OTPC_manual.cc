@@ -39,8 +39,8 @@
 
 #include "OTPCDetectorConstruction.hh"
 #include "OTPCPhysicsList.hh"
-#include "OTPCPrimaryGeneratorAction.hh"
-#include "OTPCRunAction.hh"
+#include "OTPCPrimaryGeneratorAction3.hh"
+#include "OTPCRunAction3.hh"
 #include "OTPCEventAction.hh"
 #include "OTPCSteppingAction.hh"
 
