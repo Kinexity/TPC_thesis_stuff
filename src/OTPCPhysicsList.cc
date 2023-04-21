@@ -73,10 +73,15 @@ OTPCPhysicsList::OTPCPhysicsList() : G4VModularPhysicsList()
 	SetVerboseLevel(1);
 
 	// EM physics
-	fEmOTPCPhysicsList = new PhysListEmStandard(fEmName = "local");
-	//fEmOTPCPhysicsList = new G4EmLivermorePhysics();
-	//fEmOTPCPhysicsList = new G4EmStandardPhysics_option3();
-
+	if (name == "local") {
+		fEmOTPCPhysicsList = new PhysListEmStandard(fEmName = "local");
+	}
+	else if (name == "emlivermore") {
+		fEmOTPCPhysicsList = new G4EmLivermorePhysics();
+	}
+	else if (name == "emstandard_opt3") {
+		fEmOTPCPhysicsList = new G4EmStandardPhysics_option3();
+	}
 	G4LossTableManager::Instance();
 	SetDefaultCutValue(1. * mm);
 	//SetDefaultCutValue(0.1*mm);

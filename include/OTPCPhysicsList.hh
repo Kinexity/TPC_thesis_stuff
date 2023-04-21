@@ -72,8 +72,8 @@ private:
 
 	OTPCPhysicsListMessenger* fMessenger;
 
-	//G4String name="emlivermore";
-	G4String name = "local";
+	G4String name="emlivermore";
+	//G4String name = "local";
 	//G4String name="emstandard_opt3";
 	//G4String name="empenelope";
 };

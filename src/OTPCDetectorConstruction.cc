@@ -157,8 +157,19 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	G4Element* Ca = new G4Element(name = "Calcium", "Ca", 20, a);
 
 	// Ce
-	a = 132.91 * g / mole;
-	G4Element* Ce = new G4Element(name = "Cerium", "Ce", 58, a);
+	G4Isotope* Ce136 = new G4Isotope("136Ce", 58, 136, 135.907144 * g / mole);
+	G4Isotope* Ce138 = new G4Isotope("138Ce", 58, 138, 137.905434 * g / mole);
+	G4Isotope* Ce140 = new G4Isotope("140Ce", 58, 140, 139.905434 * g / mole);
+	G4Isotope* Ce142 = new G4Isotope("142Ce", 58, 142, 141.909240 * g / mole);
+	G4Element* Ce = new G4Element("Cerium", "Ce", 4);
+	Ce->AddIsotope(Ce136, 0.185 * perCent);
+	Ce->AddIsotope(Ce138, 0.251 * perCent);
+	Ce->AddIsotope(Ce140, 88.450 * perCent);
+	Ce->AddIsotope(Ce142, 11.114 * perCent);
+	// Ce
+	//a = 132.91 * g / mole;
+	//G4Element* Ce = new G4Element(name = "Cerium", "Ce", 58, a);
+
 
 	// Br
 	a = 79.904 * g / mole;
@@ -751,7 +762,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 
 
 	// Construct the field creator - this will register the field it creates
-	F02ElectricFieldSetup* fieldSetup = new F02ElectricFieldSetup();
+	//F02ElectricFieldSetup* fieldSetup = new F02ElectricFieldSetup();
 
 
 

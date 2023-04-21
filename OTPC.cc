@@ -65,6 +65,19 @@ inline std::string filename_string(std::string path_str) {
 
 //using namespace std;
 
+std::string get_date_string() {
+	auto now = std::chrono::system_clock::now();
+	auto current_time = std::chrono::system_clock::to_time_t(now);
+
+	std::tm date;
+	localtime_s(&date, &current_time);
+
+	char buffer[100];
+	strftime(buffer, 100, "%Y-%m-%d-%H-%M-%S", &date);
+
+	return std::format("[{}]", buffer);
+}
+
 int main(int argc, char** argv) {
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -135,6 +148,7 @@ int main(int argc, char** argv) {
 
 	G4VVisManager::GetConcreteInstance()->SetDrawOverlapsFlag(true);
 #endif
+	OTPCphysList->SetDefaultCutValue(1 * mm);
 
 	const std::vector<G4double> energies = {
 		100 * keV,
@@ -154,18 +168,33 @@ int main(int argc, char** argv) {
 		4000 * keV,
 		5000 * keV };
 
+	G4String pname = "gamma";
+	std::string runDirectoryName;
+	std::filesystem::path runDirectoryPath;
+	for (int i = 0;; i++) {
+		runDirectoryName = std::format("event_{}_{}cm_{}_{}mm_{}",
+			OTPCdetector->getScintillatorType(),
+			OTPCdetector->getCrystalDepth() / cm,
+			OTPCphysList->getPhysicsListName(),
+			OTPCphysList->GetCutValue(pname) / mm,
+			get_date_string());
+		runDirectoryPath = resultsDirectoryPath / runDirectoryName;
+		if (!std::filesystem::exists(runDirectoryPath)) {
+			break;
+		}
+	}
+	std::filesystem::create_directory(runDirectoryPath);
 	for (auto energy : energies) {
-		G4String pname = "gamma";
-		auto partialFileName = std::format("event_{}keV_{}_{}cm_{}_{}_",
+		auto partialFileName = std::format("event_{}keV_{}_{}cm_{}_{}mm_",
 			energy / keV,
 			OTPCdetector->getScintillatorType(),
 			OTPCdetector->getCrystalDepth() / cm,
 			OTPCphysList->getPhysicsListName(),
-			OTPCphysList->GetCutValue(pname));;
+			OTPCphysList->GetCutValue(pname) / mm);
 		auto eventTotalDepositFileName = partialFileName + "totalDeposit";
 		auto eventStepsDepositFileName = partialFileName + "stepsDeposit";
-		auto eventTotalDepositFilePath = resultsDirectoryPath / eventTotalDepositFileName;
-		auto eventStepsDepositFilePath = resultsDirectoryPath / eventStepsDepositFileName;
+		auto eventTotalDepositFilePath = runDirectoryPath / eventTotalDepositFileName;
+		auto eventStepsDepositFilePath = runDirectoryPath / eventStepsDepositFileName;
 		OTPCrun->setEventFilePath(eventTotalDepositFilePath, eventStepsDepositFilePath);
 		// start a run
 		checkpoint;

@@ -129,27 +129,20 @@ void OTPCPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 	//y=-0.35*RangeY+G4UniformRand()*0.7*RangeY;
 	//z=-0.35*RangeZ+G4UniformRand()*0.7*RangeZ;
 
-	x = 0.0;
-	y = 0.0;
-	z = 0.0;
+	x = 0.0 * mm;
+	y = 0.0 * mm;
+	z = 0.0 * mm;
 
-	static const double     pi = 3.14159265358979323846;
+	G4double aperture = 180. * degree;
 
-	G4double aperture = 180.; // in degrees
+	for (int i = 0; i < 3; i++) {
+		theta[i] = acos(1. + (cos(aperture) - 1.) * G4UniformRand());
+		phi[i] = CLHEP::twopi * G4UniformRand();
+	}
 
-	theta[0] = acos(1. + (cos(aperture * degree) - 1.) * G4UniformRand()) * 180 / pi;
-	phi[0] = 360 * G4UniformRand();
-
-	theta[1] = acos(1. + (cos(aperture * degree) - 1.) * G4UniformRand()) * 180 / pi;
-	phi[1] = 360 * G4UniformRand();
-
-	theta[2] = acos(1. + (cos(aperture * degree) - 1.) * G4UniformRand()) * 180 / pi;
-	phi[2] = 360 * G4UniformRand();
-
-
-	FILE* metaFile = fopen("metadata.txt", "a");
-	fprintf(metaFile, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", E[0] / keV, E[1], E[2], x, y, z, theta[0], theta[1], theta[3], phi[0], phi[1], phi[2]);
-	fclose(metaFile);
+	std::fstream metaFile("metadata.txt", std::ios_base::app | std::ios_base::out);
+	metaFile << std::format("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", E[0] / keV, E[1] / keV, E[2] / keV, x/mm, y/mm, z/mm, theta[0] / degree, theta[1] / degree, theta[3] / degree, phi[0] / degree, phi[1] / degree, phi[2] / degree);
+	metaFile.close();
 
 	// particle types
 	G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
@@ -176,11 +169,10 @@ void OTPCPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		if (type[i] > 0 & type[i] < 5) {
 			//Momentum direction according to input angles
 			G4ThreeVector momentumDirection;
-			momentumDirection.setRThetaPhi(1., theta[i] * degree, phi[i] * degree);
-
+			momentumDirection.setRThetaPhi(1., theta[i], phi[i]);
 			particleGun->SetParticleDefinition(particleDefinitions[type[i] - 1]);
 
-			particleGun->SetParticlePosition(G4ThreeVector(x * mm, y * mm, z * mm));
+			particleGun->SetParticlePosition(G4ThreeVector(x, y, z));
 			particleGun->SetParticleMomentumDirection(momentumDirection);
 			particleGun->SetParticleEnergy(E[i]);
 			particleGun->GeneratePrimaryVertex(anEvent);
