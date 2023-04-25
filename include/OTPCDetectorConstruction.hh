@@ -21,6 +21,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <filesystem>
 
 #include "G4ThreeVector.hh"
 #include "G4VUserDetectorConstruction.hh"
@@ -34,11 +35,10 @@ class OTPCDetectorConstruction : public G4VUserDetectorConstruction
 public:
 	OTPCDetectorConstruction() = default;
 	~OTPCDetectorConstruction() = default;
-
-public:
 	G4VPhysicalVolume* Construct();
 	const G4double getCrystalDepth();
 	const std::string getScintillatorType();
+	void saveDetails(std::filesystem::path p);
 private:
 	F02ElectricFieldSetup* fEmFieldSetup;
 	G4String              header1, header2, header3;

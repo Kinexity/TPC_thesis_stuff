@@ -31,6 +31,10 @@
 #include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
 #include "G4VisAttributes.hh"
+#include "G4PhysicalVolumeStore.hh"
+#include "G4NistManager.hh"
+#include <fstream>
+#include <format>
 
 #include "G4IntersectionSolid.hh"
 #include "G4SubtractionSolid.hh"
@@ -39,7 +43,6 @@
 #include "G4Polycone.hh"
 
 #include "F02ElectricFieldSetup.hh"
-#include "fstream"
 
 using namespace std;
 
@@ -698,6 +701,10 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 				if (detectorSideSign < 0 && (gammaDetectorRowPosition == 2 || gammaDetectorRowPosition == 3)) { //check if column is one of two central ones as detector are place asymmetrically
 					continue;
 				}
+				if (detectorSideSign > 0 && (gammaDetectorRowPosition == 2 || gammaDetectorRowPosition == 3)) { //check if column is one of two central ones as detector are place asymmetrically
+					gammaDetectorPlacementCounter++;
+					continue;
+				}
 				G4double gammaDetectorOffsetX = externalVolumeX / 2 + gammaDetectorDepthHalfLenght;
 				G4ThreeVector gammaDetectorPosition = {
 					detectorSideSign * gammaDetectorOffsetX,
@@ -827,4 +834,61 @@ const G4double OTPCDetectorConstruction::getCrystalDepth() {
 
 const std::string OTPCDetectorConstruction::getScintillatorType() {
 	return scintillatorType;
+}
+
+void OTPCDetectorConstruction::saveDetails(std::filesystem::path p) {
+
+	std::cout << p << _endl_;
+	// Open file for writing physical volumes
+	std::ofstream outfile;
+	outfile.open(p / "volumes.csv");
+	outfile << "Physical Volume,Material,Shape\n";
+
+	checkpoint;
+	// Loop over all the physical volumes
+	auto& physicalVolumeStore = *G4PhysicalVolumeStore::GetInstance();
+	for (const auto& physicalVolume : physicalVolumeStore) {
+		const auto& material = *physicalVolume->GetLogicalVolume()->GetMaterial();
+		const auto& shape = *physicalVolume->GetLogicalVolume()->GetSolid();
+		outfile << std::format("{},{},{}\n",
+			physicalVolume->GetName(), material.GetName(), shape.GetName());
+	}
+	outfile.close();
+
+	checkpoint;
+	// Open file for writing materials
+	outfile.open(p / "materials.csv");
+	outfile << "Material,Density (g/cm3)\n";
+
+	// Loop over all the materials
+	auto& materialTable = *G4Material::GetMaterialTable();
+	for (const auto& material : materialTable) {
+		outfile << std::format("{},{:.3f}\n",
+			material->GetName(), material->GetDensity() / (g / cm3));
+	}
+	outfile.close();
+
+	checkpoint;
+	// Open file for writing elements
+	outfile.open(p / "elements.csv");
+	outfile << "Element,Atomic Number\n";
+	std::ofstream outfile_isotopes(p / "isotopes.csv");
+	outfile_isotopes << "Isotope,Atomic Number,Atomic Mass (g/mol),Natural Abundance\n";
+	// Loop over all the elements
+	auto& elementTable = *G4Element::GetElementTable();
+	for (const auto& element : elementTable) {
+		outfile << std::format("{},{}\n",
+			element->GetName(), element->GetZ());
+		auto& isotopeVector = *element->GetIsotopeVector();
+		auto relativeAbundanceVector = element->GetRelativeAbundanceVector();
+		// Loop over all the isotopes
+		for (const auto& isotope : isotopeVector) {
+			outfile_isotopes << std::format("{},{},{:.3f},{:.3f}\n",
+				isotope->GetName(), isotope->GetZ(), isotope->GetA() / (g / mole),
+				relativeAbundanceVector[isotope->GetIndex()]);
+		}
+	}
+	outfile.close();
+	outfile_isotopes.close();
+
 }

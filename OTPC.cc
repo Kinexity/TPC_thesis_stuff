@@ -55,6 +55,9 @@
 #include <memory>
 #include <chrono>
 #include <format>
+#include <algorithm>
+#include <numeric>
+//#include <conio.h>
 
 inline std::string filename_string(std::string path_str) {
 	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
@@ -78,15 +81,36 @@ std::string get_date_string() {
 	return std::format("[{}]", buffer);
 }
 
+std::vector<double> nums(double start, double end, size_t N) {
+	if (N < 2 || start > end) {
+		throw;
+	}
+	std::vector<double> v;
+	auto mult = std::pow(end / start, 1. / (N - 1));
+	for (int i = 0; i < N; i++) {
+		v.push_back(start * std::pow(mult, i));
+	}
+	return v;
+};
+
 int main(int argc, char** argv) {
 	auto start = std::chrono::high_resolution_clock::now();
-
+	//auto res = nums(100, 5000, 20);
+	//for (auto elem : res) {
+	//	std::cout << elem << '\t';
+	//}
+	//std::cout << '\n';
+	//_getch();
 	// Create results directory
-	auto resultsDirectoryPath = std::filesystem::current_path() / "results_TPC";
+	std::filesystem::path homeDirectory = "C:\\Users\\26kub";
+	if (!std::filesystem::exists(homeDirectory)) {
+		std::cout << "Set correct home directory!" << _endl_;
+		exit(1);
+	}
+	auto resultsDirectoryPath = homeDirectory / "results_TPC";
 	if (!std::filesystem::exists(resultsDirectoryPath)) {
 		std::filesystem::create_directory(resultsDirectoryPath);
 	}
-
 	G4int numberOfEvent = 1000000;
 
 	if (argc > 1) {
@@ -148,9 +172,15 @@ int main(int argc, char** argv) {
 
 	G4VVisManager::GetConcreteInstance()->SetDrawOverlapsFlag(true);
 #endif
-	OTPCphysList->SetDefaultCutValue(1 * mm);
+	OTPCphysList->SetDefaultCutValue(0.01 * mm);
 
-	const std::vector<G4double> energies = {
+	bool is_dense = false;
+	std::vector<G4double> energies;
+	if (is_dense) {
+		energies = nums(100 * keV, 5000 * keV, 250);
+	}
+	else {
+		energies = {
 		100 * keV,
 		200 * keV,
 		300 * keV,
@@ -167,6 +197,7 @@ int main(int argc, char** argv) {
 		3000 * keV,
 		4000 * keV,
 		5000 * keV };
+	}
 
 	G4String pname = "gamma";
 	std::string runDirectoryName;
@@ -177,13 +208,15 @@ int main(int argc, char** argv) {
 			OTPCdetector->getCrystalDepth() / cm,
 			OTPCphysList->getPhysicsListName(),
 			OTPCphysList->GetCutValue(pname) / mm,
-			get_date_string());
+			i);
 		runDirectoryPath = resultsDirectoryPath / runDirectoryName;
 		if (!std::filesystem::exists(runDirectoryPath)) {
 			break;
 		}
 	}
 	std::filesystem::create_directory(runDirectoryPath);
+	OTPCdetector->saveDetails(runDirectoryPath);
+	OTPCgun->setRunPath(runDirectoryPath);
 	for (auto energy : energies) {
 		auto partialFileName = std::format("event_{}keV_{}_{}cm_{}_{}mm_",
 			energy / keV,

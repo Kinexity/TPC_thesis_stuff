@@ -92,7 +92,22 @@ OTPCPrimaryGeneratorAction::OTPCPrimaryGeneratorAction(OTPCRunAction* RunAct)
 
 	/// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	G4ParticleDefinition* proton
+		= particleTable->FindParticle(particleName = "proton");
+	G4ParticleDefinition* alpha
+		= particleTable->FindParticle(particleName = "alpha");
+	G4ParticleDefinition* gammaray
+		= particleTable->FindParticle(particleName = "gamma");
 
+	G4int Z, A;
+	//example: 10Be
+	Z = 4;
+	A = 10;
+	G4double excitEnergy = 0. * keV;
+	G4ParticleDefinition* ion = G4IonTable::GetIonTable()->GetIon(Z, A, excitEnergy);
+
+
+	particleDefinitions = { proton,alpha,ion,gammaray };
 
 }
 
@@ -140,30 +155,9 @@ void OTPCPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		phi[i] = CLHEP::twopi * G4UniformRand();
 	}
 
-	std::fstream metaFile("metadata.txt", std::ios_base::app | std::ios_base::out);
-	metaFile << std::format("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", E[0] / keV, E[1] / keV, E[2] / keV, x/mm, y/mm, z/mm, theta[0] / degree, theta[1] / degree, theta[3] / degree, phi[0] / degree, phi[1] / degree, phi[2] / degree);
-	metaFile.close();
-
-	// particle types
-	G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-	G4String particleName;
-
-	G4ParticleDefinition* proton
-		= particleTable->FindParticle(particleName = "proton");
-	G4ParticleDefinition* alpha
-		= particleTable->FindParticle(particleName = "alpha");
-	G4ParticleDefinition* gammaray
-		= particleTable->FindParticle(particleName = "gamma");
-
-	G4int Z, A;
-	//example: 10Be
-	Z = 4;
-	A = 10;
-	G4double excitEnergy = 0. * keV;
-	G4ParticleDefinition* ion = G4IonTable::GetIonTable()->GetIon(Z, A, excitEnergy);
-
-
-	std::array<G4ParticleDefinition*, 4> particleDefinitions = { proton,alpha,ion,gammaray };
+	//metaFile << std::format("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", E[0] / keV, E[1] / keV, E[2] / keV, x / mm, y / mm, z / mm, theta[0] / degree, theta[1] / degree, theta[3] / degree, phi[0] / degree, phi[1] / degree, phi[2] / degree);
+	std::array<G4double,12> tpl = { E[0] / keV, E[1] / keV, E[2] / keV, x / mm, y / mm, z / mm, theta[0] / degree, theta[1] / degree, theta[3] / degree, phi[0] / degree, phi[1] / degree, phi[2] / degree };
+	metaFile.write((char*)tpl.data(), sizeof(tpl));
 
 	for (G4int i = 0; i < 3; i++) {
 		if (type[i] > 0 & type[i] < 5) {
@@ -180,6 +174,10 @@ void OTPCPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 			//G4cout<<theta[i]<<" "<<phi[i]<<" "<<E[i]<<" lauched"<<G4endl;
 		}
 	}
+}
+
+void OTPCPrimaryGeneratorAction::setRunPath(std::filesystem::path runPath) {
+	metaFile.open(runPath / "metadata.bin", std::ios_base::binary | std::ios_base::out);
 }
 
 std::array<G4double, 3>& OTPCPrimaryGeneratorAction::getEnergy() {
