@@ -56,6 +56,8 @@ inline std::string filename_string(std::string path_str) {
 #define _endl_ " (" << filename_string(__FILE__) << "; " << __LINE__ << ")" << '\n'
 #define checkpoint std::cout << "checkpoint" << _endl_
 
+OTPCDetectorConstruction::OTPCDetectorConstruction(G4double crystD, std::string scintT) : crystalDepth(crystD), scintillatorType(scintT) {}
+
 G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 {
 
@@ -461,6 +463,12 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	LaBr3->AddElement(La, natoms = 1);
 	LaBr3->AddElement(Br, natoms = 3);
 
+	// Ce doped LaBr3
+	density = 5.1 * g / cm3;
+	G4Material* LaBr3Ce = new G4Material(name = "LaBr3:Ce", density, ncomponents = 2);
+	LaBr3Ce->AddMaterial(LaBr3, 95.0 * perCent);
+	LaBr3Ce->AddElement(Ce, 5.0 * perCent);
+
 	// GAS OTPC 
 	//////////Reading the input data for primary generator///////////
 
@@ -726,7 +734,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 		scintillatorMaterial = CeBr3;
 	}
 	else if (scintillatorType == "LaBr3") {
-		scintillatorMaterial = LaBr3;
+		scintillatorMaterial = LaBr3Ce;
 	}
 
 	// crystal logical volume

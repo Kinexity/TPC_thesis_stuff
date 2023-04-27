@@ -49,8 +49,8 @@ class OTPCPhysicsListMessenger;
 class OTPCPhysicsList : public G4VModularPhysicsList
 {
 public:
-	OTPCPhysicsList();
-	~OTPCPhysicsList();
+	OTPCPhysicsList(std::string PLname = "emlivermore");
+	~OTPCPhysicsList() = default;
 
 	virtual void ConstructParticle();
 
@@ -66,13 +66,12 @@ public:
 
 	std::string getPhysicsListName();
 private:
-	G4String               fEmName;
-	G4VPhysicsConstructor* fEmOTPCPhysicsList;
+	std::unique_ptr<G4VPhysicsConstructor> fEmOTPCPhysicsList;
 	static G4ThreadLocal StepMax* fStepMaxProcess;
 
-	OTPCPhysicsListMessenger* fMessenger;
+	std::unique_ptr<OTPCPhysicsListMessenger> fMessenger;
 
-	G4String name="emlivermore";
+	G4String physicsListName = "emlivermore";
 	//G4String name = "local";
 	//G4String name="emstandard_opt3";
 	//G4String name="empenelope";

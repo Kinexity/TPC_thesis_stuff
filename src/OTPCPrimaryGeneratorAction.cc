@@ -159,7 +159,7 @@ void OTPCPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 	std::array<G4double,12> tpl = { E[0] / keV, E[1] / keV, E[2] / keV, x / mm, y / mm, z / mm, theta[0] / degree, theta[1] / degree, theta[3] / degree, phi[0] / degree, phi[1] / degree, phi[2] / degree };
 	metaFile.write((char*)tpl.data(), sizeof(tpl));
 
-	for (G4int i = 0; i < 3; i++) {
+	for (G4int i = 0; i < 1; i++) {
 		if (type[i] > 0 & type[i] < 5) {
 			//Momentum direction according to input angles
 			G4ThreeVector momentumDirection;

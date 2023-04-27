@@ -66,34 +66,29 @@ G4ThreadLocal StepMax* OTPCPhysicsList::fStepMaxProcess = 0;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-OTPCPhysicsList::OTPCPhysicsList() : G4VModularPhysicsList()
+OTPCPhysicsList::OTPCPhysicsList(std::string PLname) : G4VModularPhysicsList(), physicsListName(PLname)
 {
-	fMessenger = new OTPCPhysicsListMessenger(this);
+	fMessenger = std::make_unique<OTPCPhysicsListMessenger>(this);
 
 	SetVerboseLevel(1);
 
 	// EM physics
-	if (name == "local") {
-		fEmOTPCPhysicsList = new PhysListEmStandard(fEmName = "local");
+	if (physicsListName == "local") {
+		fEmOTPCPhysicsList = std::make_unique<PhysListEmStandard>("local");
 	}
-	else if (name == "emlivermore") {
-		fEmOTPCPhysicsList = new G4EmLivermorePhysics();
+	else if (physicsListName == "emlivermore") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmLivermorePhysics>();
 	}
-	else if (name == "emstandard_opt3") {
-		fEmOTPCPhysicsList = new G4EmStandardPhysics_option3();
+	else if (physicsListName == "emstandard_opt3") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmStandardPhysics_option3>();
+	}
+	else if (physicsListName == "empenelope") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmPenelopePhysics>();
 	}
 	G4LossTableManager::Instance();
 	SetDefaultCutValue(1. * mm);
 	//SetDefaultCutValue(0.1*mm);
 
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-OTPCPhysicsList::~OTPCPhysicsList()
-{
-	delete fMessenger;
-	delete fEmOTPCPhysicsList;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -163,79 +158,43 @@ void OTPCPhysicsList::ConstructProcess()
 void OTPCPhysicsList::AddOTPCPhysicsList()
 {
 
-	if (name == fEmName) return;
+	if (fEmOTPCPhysicsList != nullptr) return;
 
-	if (name == "local") {
-		fEmName = name;
-		delete fEmOTPCPhysicsList;
-		fEmOTPCPhysicsList = new PhysListEmStandard(name);
-
+	if (physicsListName == "local") {
+		fEmOTPCPhysicsList = std::make_unique<PhysListEmStandard>(physicsListName);
 	}
-	else if (name == "emstandard_opt0") {
-		fEmName = name;
-		delete fEmOTPCPhysicsList;
-		fEmOTPCPhysicsList = new G4EmStandardPhysics();
-
+	else if (physicsListName == "emstandard_opt0") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmStandardPhysics>();
 	}
-	else if (name == "emstandard_opt1") {
-		fEmName = name;
-		delete fEmOTPCPhysicsList;
-		fEmOTPCPhysicsList = new G4EmStandardPhysics_option1();
-
+	else if (physicsListName == "emstandard_opt1") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmStandardPhysics_option1>();
 	}
-	else if (name == "emstandard_opt2") {
-		fEmName = name;
-		delete fEmOTPCPhysicsList;
-		fEmOTPCPhysicsList = new G4EmStandardPhysics_option2();
-
+	else if (physicsListName == "emstandard_opt2") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmStandardPhysics_option2>();
 	}
-	else if (name == "emstandard_opt3") {
-		fEmName = name;
-		delete fEmOTPCPhysicsList;
-		fEmOTPCPhysicsList = new G4EmStandardPhysics_option3();
-
+	else if (physicsListName == "emstandard_opt3") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmStandardPhysics_option3>();
 	}
-	else if (name == "emstandard_opt4") {
-		fEmName = name;
-		delete fEmOTPCPhysicsList;
-		fEmOTPCPhysicsList = new G4EmStandardPhysics_option4();
-
+	else if (physicsListName == "emstandard_opt4") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmStandardPhysics_option4>();
 	}
-	else if (name == "emstandardSS") {
-		fEmName = name;
-		delete fEmOTPCPhysicsList;
-		fEmOTPCPhysicsList = new G4EmStandardPhysicsSS();
-
+	else if (physicsListName == "emstandardSS") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmStandardPhysicsSS>();
 	}
-	else if (name == "emstandardGS") {
-		fEmName = name;
-		delete fEmOTPCPhysicsList;
-		fEmOTPCPhysicsList = new G4EmStandardPhysicsGS();
-
+	else if (physicsListName == "emstandardGS") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmStandardPhysicsGS>();
 	}
-	else if (name == "emstandardWVI") {
-		fEmName = name;
-		delete fEmOTPCPhysicsList;
-		fEmOTPCPhysicsList = new G4EmStandardPhysicsWVI();
-
+	else if (physicsListName == "emstandardWVI") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmStandardPhysicsWVI>();
 	}
-	else if (name == "emlowenergy") {
-		fEmName = name;
-		delete fEmOTPCPhysicsList;
-		fEmOTPCPhysicsList = new G4EmLowEPPhysics();
-
+	else if (physicsListName == "emlowenergy") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmLowEPPhysics>();
 	}
-	else if (name == "emlivermore") {
-		fEmName = name;
-		delete fEmOTPCPhysicsList;
-		fEmOTPCPhysicsList = new G4EmLivermorePhysics();
-
+	else if (physicsListName == "emlivermore") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmLivermorePhysics>();
 	}
-	else if (name == "empenelope") {
-		fEmName = name;
-		delete fEmOTPCPhysicsList;
-		fEmOTPCPhysicsList = new G4EmPenelopePhysics();
-
+	else if (physicsListName == "empenelope") {
+		fEmOTPCPhysicsList = std::make_unique<G4EmPenelopePhysics>();
 	}
 
 }
@@ -355,5 +314,5 @@ void OTPCPhysicsList::AddIonGasModels() {
 }
 
 std::string OTPCPhysicsList::getPhysicsListName() {
-	return name;
+	return fEmOTPCPhysicsList->GetPhysicsName();
 }

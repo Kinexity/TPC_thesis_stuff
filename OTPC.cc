@@ -94,14 +94,17 @@ std::vector<double> nums(double start, double end, size_t N) {
 };
 
 int main(int argc, char** argv) {
+
+	bool is_dense = false;
+	bool skipIfDataExists = false;
+	G4double crystalDepth = 10 * cm;
+	G4double cutValue = 1 * mm;
+	std::string scintillatorType = "CeBr3";
+	std::string physicsListName = "emlivermore";
+	G4int numberOfEvent = 1000000;
+
 	auto start = std::chrono::high_resolution_clock::now();
-	//auto res = nums(100, 5000, 20);
-	//for (auto elem : res) {
-	//	std::cout << elem << '\t';
-	//}
-	//std::cout << '\n';
-	//_getch();
-	// Create results directory
+
 	std::filesystem::path homeDirectory = "C:\\Users\\26kub";
 	if (!std::filesystem::exists(homeDirectory)) {
 		std::cout << "Set correct home directory!" << _endl_;
@@ -111,10 +114,14 @@ int main(int argc, char** argv) {
 	if (!std::filesystem::exists(resultsDirectoryPath)) {
 		std::filesystem::create_directory(resultsDirectoryPath);
 	}
-	G4int numberOfEvent = 1000000;
 
 	if (argc > 1) {
 		numberOfEvent = std::stoi(argv[1]);
+		scintillatorType = argv[2];
+		crystalDepth = std::stod(argv[3]) * cm;
+		physicsListName = argv[4];
+		cutValue = std::stod(argv[5]) * mm;
+		skipIfDataExists = std::stoi(argv[6]);
 	}
 
 	// Choose the random engine and initialize
@@ -140,9 +147,9 @@ int main(int argc, char** argv) {
 
 	checkpoint;
 	// set mandatory initialization classes
-	auto OTPCdetector = new OTPCDetectorConstruction;
+	auto OTPCdetector = new OTPCDetectorConstruction(crystalDepth, scintillatorType);
 	runManager->SetUserInitialization(OTPCdetector);
-	auto OTPCphysList = new OTPCPhysicsList;
+	auto OTPCphysList = new OTPCPhysicsList(physicsListName);
 	runManager->SetUserInitialization(OTPCphysList);
 
 	checkpoint;
@@ -172,9 +179,8 @@ int main(int argc, char** argv) {
 
 	G4VVisManager::GetConcreteInstance()->SetDrawOverlapsFlag(true);
 #endif
-	OTPCphysList->SetDefaultCutValue(0.01 * mm);
+	OTPCphysList->SetDefaultCutValue(cutValue);
 
-	bool is_dense = false;
 	std::vector<G4double> energies;
 	if (is_dense) {
 		energies = nums(100 * keV, 5000 * keV, 250);
@@ -210,6 +216,10 @@ int main(int argc, char** argv) {
 			OTPCphysList->GetCutValue(pname) / mm,
 			i);
 		runDirectoryPath = resultsDirectoryPath / runDirectoryName;
+		if (std::filesystem::exists(runDirectoryPath) && skipIfDataExists) {
+			std::cout << "Data exists. Aborting simulation." << _endl_;
+			return 0;
+		}
 		if (!std::filesystem::exists(runDirectoryPath)) {
 			break;
 		}

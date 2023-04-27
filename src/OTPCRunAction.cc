@@ -42,7 +42,7 @@ OTPCRunAction::OTPCRunAction()
 
 void OTPCRunAction::BeginOfRunAction(const G4Run*)
 {
-	eventTotalDepositFile.open(eventTotalDepositFilePath.string() + ".csv", std::ios_base::out | std::ios_base::trunc);
+	//eventTotalDepositFile.open(eventTotalDepositFilePath.string() + ".csv", std::ios_base::out | std::ios_base::trunc);
 	//eventStepsDepositFile.open(eventStepsDepositFilePath.string() + ".csv", std::ios_base::out | std::ios_base::trunc);
 	eventTotalDepositFileBinary.open(eventTotalDepositFilePath.string() + ".bin", std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
 	//eventStepsDepositFileBinary.open(eventStepsDepositFilePath.string() + ".bin", std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
@@ -54,7 +54,7 @@ void OTPCRunAction::BeginOfRunAction(const G4Run*)
 void OTPCRunAction::EndOfRunAction(const G4Run*)
 {
 
-	eventTotalDepositFile.close();
+	//eventTotalDepositFile.close();
 	//eventStepsDepositFile.close();
 	eventTotalDepositFileBinary.close();
 	//eventStepsDepositFileBinary.close();
@@ -77,10 +77,10 @@ void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>>& EnergyDeposit,
 
 	eventTotalDepositFileBinary.write((char*)EnergyGammaCrystals.data(), EnergyGammaCrystals.size() * sizeof(G4double));
 
-	for (auto& EnergyDepositOneCrystal : EnergyGammaCrystals) {
-		eventTotalDepositFile << EnergyDepositOneCrystal << '\t';
-	}
-	eventTotalDepositFile << "\n";
+	//for (auto& EnergyDepositOneCrystal : EnergyGammaCrystals) {
+	//	eventTotalDepositFile << EnergyDepositOneCrystal << '\t';
+	//}
+	//eventTotalDepositFile << "\n";
 
 	eventIndex++;
 	if (eventIndex % 10000 == 0) {

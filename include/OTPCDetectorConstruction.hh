@@ -34,6 +34,7 @@ class OTPCDetectorConstruction : public G4VUserDetectorConstruction
 {
 public:
 	OTPCDetectorConstruction() = default;
+	OTPCDetectorConstruction(G4double crystD, std::string scintT);
 	~OTPCDetectorConstruction() = default;
 	G4VPhysicalVolume* Construct();
 	const G4double getCrystalDepth();
@@ -50,8 +51,8 @@ private:
 	G4double              d;
 
 
-	const G4double crystalDepth = 10 * cm;
-	const std::string scintillatorType = "CeBr3";
+	G4double crystalDepth = 10 * cm;
+	std::string scintillatorType = "CeBr3";
 };
 
 #endif
