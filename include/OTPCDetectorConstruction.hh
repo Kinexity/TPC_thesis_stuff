@@ -22,6 +22,7 @@
 #include <iomanip>
 #include <iostream>
 #include <filesystem>
+#include <array>
 
 #include "G4ThreeVector.hh"
 #include "G4VUserDetectorConstruction.hh"
@@ -43,12 +44,9 @@ public:
 private:
 	F02ElectricFieldSetup* fEmFieldSetup;
 	G4String              header1, header2, header3;
-	G4int                 gas[3];
-	G4double              fgas[3];
-	G4double              T;
-	G4double              P;
-	G4double              E;
-	G4double              d;
+	std::array<G4int, 3> gas;
+	std::array<G4double, 3> fgas;
+	G4double T, P, E, d;
 
 
 	G4double crystalDepth = 10 * cm;

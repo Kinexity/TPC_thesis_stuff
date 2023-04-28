@@ -95,13 +95,18 @@ std::vector<double> nums(double start, double end, size_t N) {
 
 int main(int argc, char** argv) {
 
-	bool is_dense = false;
-	bool skipIfDataExists = false;
-	G4double crystalDepth = 10 * cm;
-	G4double cutValue = 1 * mm;
-	std::string scintillatorType = "CeBr3";
-	std::string physicsListName = "emlivermore";
-	G4int numberOfEvent = 1000000;
+	bool 
+		isDense = false,
+		skipIfDataExists = false,
+		dataOverwrite = false;
+	G4double 
+		crystalDepth = 10 * cm,
+		cutValue = 1 * mm;
+	std::string 
+		scintillatorType = "CeBr3",
+		physicsListName = "emlivermore";
+	G4int 
+		numberOfEvent = 1000000;
 
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -182,7 +187,7 @@ int main(int argc, char** argv) {
 	OTPCphysList->SetDefaultCutValue(cutValue);
 
 	std::vector<G4double> energies;
-	if (is_dense) {
+	if (isDense) {
 		energies = nums(100 * keV, 5000 * keV, 250);
 	}
 	else {
@@ -220,7 +225,7 @@ int main(int argc, char** argv) {
 			std::cout << "Data exists. Aborting simulation." << _endl_;
 			return 0;
 		}
-		if (!std::filesystem::exists(runDirectoryPath)) {
+		if (!std::filesystem::exists(runDirectoryPath) || dataOverwrite) {
 			break;
 		}
 	}

@@ -490,43 +490,49 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	G4cout << fgas[0] << " " << fgas[1] << " " << fgas[2] << G4endl;
 	G4cout << T << " " << P << " " << E << G4endl;
 	//////////////////////////////////////////////////////////////////
-
+	//apply units
+	for (auto& fgas_ : fgas) {
+		fgas_ *= perCent;
+	}
+	P *= 1e3 * pascal;
+	T *= kelvin;
+	E *= volt / cm;
 	//Masses in g/mol:
-	G4double He_amu = 4.003;
-	G4double Ar_amu = 39.948;
-	G4double C_amu = 12.011;
-	G4double O_amu = 16.;
-	G4double F_amu = 18.998;
-	G4double N_amu = 14.007;
+	const G4double He_amu = 4.003 * g / mole;
+	const G4double Ar_amu = 39.948 * g / mole;
+	const G4double C_amu = 12.011 * g / mole;
+	const G4double O_amu = 16. * g / mole;
+	const G4double F_amu = 18.998 * g / mole;
+	const G4double N_amu = 14.007 * g / mole;
 
 	G4double CO2_amu = C_amu + 2 * O_amu;
 	G4double CF4_amu = C_amu + 4 * F_amu;
 	G4double N2_amu = 2 * N_amu;
 
 	//Gas composition:
-	G4double gas_amu = 0.0;
+	G4double gas_amu = 0.0 * g / mole;
 
 	//Individual gass constant calculation:
-	G4double K_gas = 8314.4598; //in kPa.cm3/(mol.K)
+	G4double K_gas = 8314.4598 * 1e3 * pascal * cm3 / (mole * kelvin); //in kPa.cm3/(mol.K)
 
 	G4int Ngases = 0;
 	for (G4int k = 0; k < 3; k++) {
 		if (fgas[k] > 0) {
 			if (gas[k] == 1) {
 				Ngases = Ngases + 2; //Two components!
-				gas_amu = gas_amu + 1e-2 * fgas[k] * CF4_amu; //fgas are in %!
+				gas_amu += fgas[k] * CF4_amu; //fgas are in %!
 			}
 			else if (gas[k] == 2) {
 				Ngases++;
-				gas_amu = gas_amu + 1e-2 * fgas[k] * Ar_amu; //fgas are in %!
+				gas_amu += fgas[k] * Ar_amu; //fgas are in %!
 			}
 			else if (gas[k] == 3) {
 				Ngases++;
-				gas_amu = gas_amu + 1e-2 * fgas[k] * He_amu; //fgas are in %!
+				gas_amu += fgas[k] * He_amu; //fgas are in %!
 			}
 			else if (gas[k] == 4) {
 				Ngases++;
-				gas_amu = gas_amu + 1e-2 * fgas[k] * N2_amu; //fgas are in %!
+				gas_amu += fgas[k] * N2_amu; //fgas are in %!
 			}
 		}
 	}
@@ -539,27 +545,27 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	G4double d = P / (K_gas_mixture * T); //in g/cm3
 
 	G4cout << "Density: " << endl;
-	G4cout << d << "g/cm3" << endl;
-	G4cout << 1e3 * d << "mg/cm3" << endl;
+	G4cout << d / (g / cm3) << "g/cm3" << endl;
+	G4cout << d / (mg / cm3) << "mg/cm3" << endl;
 
 
-	G4Material* GasOTPC = new G4Material(name = "GasOTPC", 1e3 * d * mg / cm3, ncomponents = Ngases, kStateGas, T * kelvin, P * 1e3 * pascal);
+	G4Material* GasOTPC = new G4Material(name = "GasOTPC", d, ncomponents = Ngases, kStateGas, T, P);
 
 	//In atoms!
 	for (G4int k = 0; k < 3; k++) {
 		if (fgas[k] > 0) {
 			if (gas[k] == 1) {
-				GasOTPC->AddElement(C, int(1e3 * fgas[k]));  //CF4
-				GasOTPC->AddElement(F, int(1e3 * fgas[k] * 4));
+				GasOTPC->AddElement(C, int(1e5 * fgas[k]));  //CF4
+				GasOTPC->AddElement(F, int(1e5 * fgas[k] * 4));
 			}
 			else if (gas[k] == 2) {
-				GasOTPC->AddElement(Ar, int(1e3 * fgas[k]));  //Ar
+				GasOTPC->AddElement(Ar, int(1e5 * fgas[k]));  //Ar
 			}
 			else if (gas[k] == 3) {
-				GasOTPC->AddElement(He, int(1e3 * fgas[k])); //He
+				GasOTPC->AddElement(He, int(1e5 * fgas[k])); //He
 			}
 			else if (gas[k] == 4) {
-				GasOTPC->AddElement(N, int(1e3 * fgas[k] * 2));  //N2
+				GasOTPC->AddElement(N, int(1e5 * fgas[k] * 2));  //N2
 			}
 		}
 	}
