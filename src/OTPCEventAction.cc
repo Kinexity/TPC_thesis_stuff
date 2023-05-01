@@ -51,6 +51,8 @@ void OTPCEventAction::EndOfEventAction(const G4Event* evt)
 	  if(EnergyDepositX[i]>0){G4cout<<"From event: "<<i<<" "<<EnergyDepositX[i]<<G4endl;}
 	}*/
 
+	evt->GetTrajectoryContainer()->GetVector();
+
 	runAction->fillOut(EnergyDeposit, TotalEnergyDepositCrystal);
 
 }

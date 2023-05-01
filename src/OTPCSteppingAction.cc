@@ -66,7 +66,9 @@ void OTPCSteppingAction::UserSteppingAction(const G4Step* aStep)
 	//	eventAction->addEdep(edep / keV, x / mm, y / mm, z / mm);
 	//	//G4cout<<edep/keV<<"    "<<x/mm<<"    "<<y/mm<<"    "<<z/mm<<G4endl;
 	//}
+	if (currentMaterialName == "CeBr3") {
 
+	}
 	if (edep > 0.0 & currentMaterialName == "CeBr3") {
 
 		G4int nCrystal = touch->GetCopyNumber(1); //N will be the number of levels up, we have to check it to pickup the index of CeBr3 crystal

@@ -48,7 +48,7 @@ private:
 	std::array<G4double, 3> fgas;
 	G4double T, P, E, d;
 
-
+	const bool removeGroup0 = false;
 	G4double crystalDepth = 10 * cm;
 	std::string scintillatorType = "CeBr3";
 };

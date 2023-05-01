@@ -58,8 +58,9 @@ inline std::string filename_string(std::string path_str) {
 
 OTPCDetectorConstruction::OTPCDetectorConstruction(G4double crystD, std::string scintT) : crystalDepth(crystD), scintillatorType(scintT) {}
 
-G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
-{
+G4VPhysicalVolume* OTPCDetectorConstruction::Construct() {
+
+	G4NistManager* nistManager = G4NistManager::Instance();
 
 	//----------------------------------------------------
 	// Materials definitions
@@ -515,25 +516,32 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	//Individual gass constant calculation:
 	G4double K_gas = 8314.4598 * 1e3 * pascal * cm3 / (mole * kelvin); //in kPa.cm3/(mol.K)
 
+	//std::vector<G4Material*> gases = { CF4, Argon, Helium, Nitrogen };
+
 	G4int Ngases = 0;
 	for (G4int k = 0; k < 3; k++) {
 		if (fgas[k] > 0) {
-			if (gas[k] == 1) {
-				Ngases = Ngases + 2; //Two components!
-				gas_amu += fgas[k] * CF4_amu; //fgas are in %!
-			}
-			else if (gas[k] == 2) {
+			switch (gas[k]) {
+			case 1:
+				Ngases += 2; // Two components!
+				gas_amu += fgas[k] * CF4_amu; // fgas are in %!
+				break;
+			case 2:
 				Ngases++;
-				gas_amu += fgas[k] * Ar_amu; //fgas are in %!
-			}
-			else if (gas[k] == 3) {
+				gas_amu += fgas[k] * Ar_amu; // fgas are in %!
+				break;
+			case 3:
 				Ngases++;
-				gas_amu += fgas[k] * He_amu; //fgas are in %!
-			}
-			else if (gas[k] == 4) {
+				gas_amu += fgas[k] * He_amu; // fgas are in %!
+				break;
+			case 4:
 				Ngases++;
-				gas_amu += fgas[k] * N2_amu; //fgas are in %!
+				gas_amu += fgas[k] * N2_amu; // fgas are in %!
+				break;
+			default:
+				break;
 			}
+
 		}
 	}
 	G4cout << "Gas atomic components " << Ngases << G4endl;
@@ -554,41 +562,32 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 	//In atoms!
 	for (G4int k = 0; k < 3; k++) {
 		if (fgas[k] > 0) {
-			if (gas[k] == 1) {
+			switch (gas[k]) {
+			case 1:
 				GasOTPC->AddElement(C, int(1e5 * fgas[k]));  //CF4
 				GasOTPC->AddElement(F, int(1e5 * fgas[k] * 4));
-			}
-			else if (gas[k] == 2) {
+				break;
+			case 2:
 				GasOTPC->AddElement(Ar, int(1e5 * fgas[k]));  //Ar
-			}
-			else if (gas[k] == 3) {
+				break;
+			case 3:
 				GasOTPC->AddElement(He, int(1e5 * fgas[k])); //He
-			}
-			else if (gas[k] == 4) {
+				break;
+			case 4:
 				GasOTPC->AddElement(N, int(1e5 * fgas[k] * 2));  //N2
+				break;
+			default:
+				break;
 			}
 		}
 	}
 
 
-	//
-	//  define Vacuum
-	//
-
-	pressure = 3.e-18 * pascal;
-	temperature = 2.73 * kelvin;
-	density = 1.e-25 * g / cm3;
-
-	G4Material* Vacuum = new G4Material(name = "Galactic", z = 1., a = 1.01 * g / mole,
-		density, kStateGas, temperature, pressure);
+	//Vacuum
+	G4Material* Vacuum = nistManager->FindOrBuildMaterial("G4_Galactic");
 
 	//Air
-	density = 1.29 * mg / cm3;
-	G4Material* Air = new G4Material(name = "Air  ", density, ncomponents = 4);
-	Air->AddElement(N, fractionmass = 75.51 * perCent);
-	Air->AddElement(O, fractionmass = 23.18 * perCent);
-	Air->AddElement(C, fractionmass = 0.02 * perCent);
-	Air->AddElement(Ar, fractionmass = 1.29 * perCent);
+	G4Material* Air = nistManager->FindOrBuildMaterial("G4_AIR");
 
 	//<--------------------------------------------------------------------------------------------------------------------------------->
 	//<--------------------------------------------------------------World-------------------------------------------------------------->
@@ -715,7 +714,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct()
 				if (detectorSideSign < 0 && (gammaDetectorRowPosition == 2 || gammaDetectorRowPosition == 3)) { //check if column is one of two central ones as detector are place asymmetrically
 					continue;
 				}
-				if (detectorSideSign > 0 && (gammaDetectorRowPosition == 2 || gammaDetectorRowPosition == 3)) { //check if column is one of two central ones as detector are place asymmetrically
+				if (removeGroup0 && detectorSideSign > 0 && (gammaDetectorRowPosition == 2 || gammaDetectorRowPosition == 3)) { //check if column is one of two central ones as detector are place asymmetrically
 					gammaDetectorPlacementCounter++;
 					continue;
 				}

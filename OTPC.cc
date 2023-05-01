@@ -213,12 +213,14 @@ int main(int argc, char** argv) {
 	G4String pname = "gamma";
 	std::string runDirectoryName;
 	std::filesystem::path runDirectoryPath;
+	std::string paramString = std::format("{}_{}cm_{}_{}mm",
+		OTPCdetector->getScintillatorType(),
+		OTPCdetector->getCrystalDepth() / cm,
+		OTPCphysList->getPhysicsListName(),
+		OTPCphysList->GetCutValue(pname) / mm);
 	for (int i = 0;; i++) {
-		runDirectoryName = std::format("event_{}_{}cm_{}_{}mm_{}",
-			OTPCdetector->getScintillatorType(),
-			OTPCdetector->getCrystalDepth() / cm,
-			OTPCphysList->getPhysicsListName(),
-			OTPCphysList->GetCutValue(pname) / mm,
+		runDirectoryName = std::format("event_{}_{}",
+			paramString,
 			i);
 		runDirectoryPath = resultsDirectoryPath / runDirectoryName;
 		if (std::filesystem::exists(runDirectoryPath) && skipIfDataExists) {
@@ -233,12 +235,9 @@ int main(int argc, char** argv) {
 	OTPCdetector->saveDetails(runDirectoryPath);
 	OTPCgun->setRunPath(runDirectoryPath);
 	for (auto energy : energies) {
-		auto partialFileName = std::format("event_{}keV_{}_{}cm_{}_{}mm_",
+		auto partialFileName = std::format("event_{}keV_{}_",
 			energy / keV,
-			OTPCdetector->getScintillatorType(),
-			OTPCdetector->getCrystalDepth() / cm,
-			OTPCphysList->getPhysicsListName(),
-			OTPCphysList->GetCutValue(pname) / mm);
+			paramString);
 		auto eventTotalDepositFileName = partialFileName + "totalDeposit";
 		auto eventStepsDepositFileName = partialFileName + "stepsDeposit";
 		auto eventTotalDepositFilePath = runDirectoryPath / eventTotalDepositFileName;
