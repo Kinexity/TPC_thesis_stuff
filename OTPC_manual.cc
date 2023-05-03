@@ -85,13 +85,15 @@ int main(int argc, char** argv)
 	runManager->SetUserInitialization(new OTPCDetectorConstruction);
 	runManager->SetUserInitialization(new OTPCPhysicsList);
 
+
+	std::string scint = "CeBr3";
 	// set aditional user action classes
 	OTPCRunAction* OTPCrun = new OTPCRunAction;
 	runManager->SetUserAction(OTPCrun);
 	OTPCEventAction* OTPCevent = new OTPCEventAction(OTPCrun);
 	runManager->SetUserAction(OTPCevent);
 	OTPCSteppingAction* OTPCstep =
-		new OTPCSteppingAction(OTPCevent);
+		new OTPCSteppingAction(OTPCevent, scint);
 	runManager->SetUserAction(OTPCstep);
 
 	// set mandatory user action class

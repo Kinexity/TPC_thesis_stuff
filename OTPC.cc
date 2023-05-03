@@ -57,7 +57,6 @@
 #include <format>
 #include <algorithm>
 #include <numeric>
-//#include <conio.h>
 
 inline std::string filename_string(std::string path_str) {
 	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
@@ -163,7 +162,7 @@ int main(int argc, char** argv) {
 	runManager->SetUserAction(OTPCrun);
 	OTPCEventAction* OTPCevent = new OTPCEventAction(OTPCrun);
 	runManager->SetUserAction(OTPCevent);
-	OTPCSteppingAction* OTPCstep = new OTPCSteppingAction(OTPCevent);
+	OTPCSteppingAction* OTPCstep = new OTPCSteppingAction(OTPCevent, OTPCdetector->getScintillatorType());
 	runManager->SetUserAction(OTPCstep);
 
 	checkpoint;

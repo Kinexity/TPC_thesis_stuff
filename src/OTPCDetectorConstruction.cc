@@ -18,7 +18,6 @@
 #include "G4Transform3D.hh"
 #include "G4NistManager.hh"
 
-#include "G4Material.hh"
 #include "G4MaterialTable.hh"
 #include "G4Element.hh"
 #include "G4ElementTable.hh"
@@ -466,7 +465,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct() {
 
 	// Ce doped LaBr3
 	density = 5.1 * g / cm3;
-	G4Material* LaBr3Ce = new G4Material(name = "LaBr3:Ce", density, ncomponents = 2);
+	G4Material* LaBr3Ce = new G4Material(name = "LaBr3Ce", density, ncomponents = 2);
 	LaBr3Ce->AddMaterial(LaBr3, 95.0 * perCent);
 	LaBr3Ce->AddElement(Ce, 5.0 * perCent);
 
@@ -742,6 +741,8 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct() {
 		scintillatorMaterial = LaBr3Ce;
 	}
 
+	realScintillatorType = scintillatorMaterial->GetName();
+
 	// crystal logical volume
 	G4LogicalVolume* crystalVolumeLogical = new G4LogicalVolume(crystalVolumeSolid, scintillatorMaterial, "crystalVolumeLogical");
 
@@ -845,8 +846,8 @@ const G4double OTPCDetectorConstruction::getCrystalDepth() {
 	return crystalDepth;
 }
 
-const std::string OTPCDetectorConstruction::getScintillatorType() {
-	return scintillatorType;
+const std::string& OTPCDetectorConstruction::getScintillatorType() {
+	return realScintillatorType;
 }
 
 void OTPCDetectorConstruction::saveDetails(std::filesystem::path p) {

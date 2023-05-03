@@ -13,25 +13,27 @@
 //  V. Guadilla 2021 
 //  Get energy deposited in sensitive volume
 //
- 
+
 
 #ifndef OTPCSteppingAction_h
 #define OTPCSteppingAction_h 1
 
 #include "G4UserSteppingAction.hh"
+#include <string>
 
 class OTPCEventAction;
 
 class OTPCSteppingAction : public G4UserSteppingAction
 {
-  public:
-    OTPCSteppingAction(OTPCEventAction*);
-    ~OTPCSteppingAction() = default;
+public:
+	OTPCSteppingAction(OTPCEventAction*, const std::string& scintName);
+	~OTPCSteppingAction() = default;
 
-    void UserSteppingAction(const G4Step*);
-    
-  private:
-    OTPCEventAction* eventAction;
+	void UserSteppingAction(const G4Step*);
+
+private:
+	const std::string& scintilatorType;
+	OTPCEventAction* eventAction;
 };
 
 #endif
