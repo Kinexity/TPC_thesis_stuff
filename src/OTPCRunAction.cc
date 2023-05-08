@@ -22,6 +22,9 @@
 #include "iomanip"
 #include "Randomize.hh"
 #include "time.h"
+#include <numeric>
+#include <format>
+#include <execution>
 
 
 #include "G4SystemOfUnits.hh"
@@ -61,30 +64,44 @@ void OTPCRunAction::EndOfRunAction(const G4Run*)
 	//Stop timer and get CPU time
 	timer->Stop();
 	G4double cputime = timer->GetRealElapsed();
-	cout << " CPU time = " << cputime << " s" << endl;
-
+	std::cout << std::format("Events with decays = {} \n CPU time = {} s\n", decayCounter, cputime);
 
 }
 
-void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>>& EnergyDeposit, std::array<G4double, 20>& EnergyGammaCrystals)
-{
-	//if (EnergyDeposit.size() > 0) {
-	//	eventStepsDepositFile << eventIndex << '\t' << EnergyDeposit.size() << '\n';
-	//	for (auto& EnergyDeposit_i : EnergyDeposit) {
-	//		eventStepsDepositFile << EnergyDeposit_i[0] << ',' << EnergyDeposit_i[1] << ',' << EnergyDeposit_i[2] << ',' << EnergyDeposit_i[3] << '\n';
-	//	}
-	//}
+void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>>& EnergyDeposit) {
+	if (EnergyDeposit.size() > 0) {
+		eventStepsDepositFile << eventIndex << '\t' << EnergyDeposit.size() << '\n';
+		for (auto& EnergyDeposit_i : EnergyDeposit) {
+			eventStepsDepositFile << EnergyDeposit_i[0] << ',' << EnergyDeposit_i[1] << ',' << EnergyDeposit_i[2] << ',' << EnergyDeposit_i[3] << '\n';
+		}
+	}
+}
 
+void OTPCRunAction::fillOut(std::array<G4double, 20>& EnergyGammaCrystals) {
 	eventTotalDepositFileBinary.write((char*)EnergyGammaCrystals.data(), EnergyGammaCrystals.size() * sizeof(G4double));
-
+	
 	//for (auto& EnergyDepositOneCrystal : EnergyGammaCrystals) {
 	//	eventTotalDepositFile << EnergyDepositOneCrystal << '\t';
 	//}
 	//eventTotalDepositFile << "\n";
-
+	
 	eventIndex++;
 	if (eventIndex % 10000 == 0) {
 		std::cout << eventIndex << '\n';
+	}
+}
+
+void OTPCRunAction::fillOut(std::vector<std::tuple<G4double, G4double, G4double, G4String>>& ProcessSteps, G4double totalEnergy) {
+	decayCounter += std::any_of(std::execution::par, ProcessSteps.begin(), ProcessSteps.end(),
+		[](const auto& tuple) {
+			return std::get<3>(tuple) == "RadioactiveDecay";
+		});
+	if (ProcessSteps.size() > 0 && totalEnergy > 5000 * 1.001) {
+		eventStepsDepositFile.open(eventStepsDepositFilePath.string() + std::format("_{}.txt", eventIndex), std::ios_base::out | std::ios_base::trunc);
+		for (auto [x, y, z, step] : ProcessSteps) {
+			eventStepsDepositFile << std::format("{}\t{}\t{}\t{}\n", x, y, z, step);
+		}
+		eventStepsDepositFile.close();
 	}
 }
 

@@ -191,21 +191,21 @@ int main(int argc, char** argv) {
 	}
 	else {
 		energies = {
-		100 * keV,
-		200 * keV,
-		300 * keV,
-		400 * keV,
-		500 * keV,
-		600 * keV,
-		700 * keV,
-		800 * keV,
-		900 * keV,
-		1000 * keV,
-		1250 * keV,
-		1500 * keV,
-		2000 * keV,
-		3000 * keV,
-		4000 * keV,
+		//100 * keV,
+		//200 * keV,
+		//300 * keV,
+		//400 * keV,
+		//500 * keV,
+		//600 * keV,
+		//700 * keV,
+		//800 * keV,
+		//900 * keV,
+		//1000 * keV,
+		//1250 * keV,
+		//1500 * keV,
+		//2000 * keV,
+		//3000 * keV,
+		//4000 * keV,
 		5000 * keV };
 	}
 

@@ -28,6 +28,7 @@
 #include "G4ios.hh"
 #include "fstream"
 #include "iomanip"
+#include <numeric>
 
 
 OTPCEventAction::OTPCEventAction(OTPCRunAction* RunAct)
@@ -39,6 +40,7 @@ OTPCEventAction::~OTPCEventAction()
 
 void OTPCEventAction::BeginOfEventAction(const G4Event*) {
 	EnergyDeposit.clear();
+	ProcessStep.clear();
 	for (auto& elem : TotalEnergyDepositCrystal) {
 		elem = 0;
 	}
@@ -51,9 +53,12 @@ void OTPCEventAction::EndOfEventAction(const G4Event* evt)
 	  if(EnergyDepositX[i]>0){G4cout<<"From event: "<<i<<" "<<EnergyDepositX[i]<<G4endl;}
 	}*/
 
-	evt->GetTrajectoryContainer()->GetVector();
+	//evt->GetTrajectoryContainer()->GetVector();
 
-	runAction->fillOut(EnergyDeposit, TotalEnergyDepositCrystal);
+	//runAction->fillOut(EnergyDeposit, TotalEnergyDepositCrystal);
+	G4double totalEnergy = std::reduce(TotalEnergyDepositCrystal.begin(), TotalEnergyDepositCrystal.end());
+	runAction->fillOut(ProcessStep, totalEnergy);
+	runAction->fillOut(TotalEnergyDepositCrystal);
 
 }
 
@@ -66,6 +71,10 @@ void OTPCEventAction::addEdep(G4double Edep, G4double x, G4double y, G4double z)
 	EnergyDeposit.push_back({ Edep, x, y, z });
 	//G4cout<<nstep<<G4endl;
 
+}
+
+void OTPCEventAction::addProcess(G4double x, G4double y, G4double z, G4String name) {
+	ProcessStep.push_back({ x,y,z,name });
 }
 
 

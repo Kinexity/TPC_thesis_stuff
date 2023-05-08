@@ -22,6 +22,7 @@
 #include "globals.hh"
 #include <array>
 #include <vector>
+#include <tuple>
 
 class G4Event;
 class OTPCRunAction;
@@ -36,12 +37,15 @@ public:
 	void BeginOfEventAction(const G4Event*);
 	void EndOfEventAction(const G4Event*);
 	void addEdep(G4double Edep, G4double x, G4double y, G4double z);
+	void addProcess(G4double x, G4double y, G4double z, G4String name);
 	void add_E_i(G4int nCrystal, G4double edep);
 
 private:
 	OTPCRunAction* runAction;
 	G4int Range;
 
+	std::vector<std::tuple<G4double, G4double, G4double, G4String>>
+		ProcessStep;
 	std::vector<std::array<G4double, 4>>
 		EnergyDeposit;
 	std::array<G4double, 20>
