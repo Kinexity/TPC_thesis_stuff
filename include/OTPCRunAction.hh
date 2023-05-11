@@ -47,7 +47,8 @@ class OTPCRunAction : public G4UserRunAction
     void fillOut(std::array<G4double, 20>& EnergyGammaCrystals);
     void fillOut(std::vector<std::tuple<G4double, G4double, G4double, G4String>>& ProcessSteps, G4double totalEnergy);
     
-    
+    void updateEventCounter();
+
     void setEventFilePath(std::filesystem::path totalP, std::filesystem::path stepsP);
 private:
    

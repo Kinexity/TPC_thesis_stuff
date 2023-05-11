@@ -94,18 +94,19 @@ std::vector<double> nums(double start, double end, size_t N) {
 
 int main(int argc, char** argv) {
 
-	bool 
+	bool
 		isDense = false,
 		skipIfDataExists = false,
 		dataOverwrite = false;
-	G4double 
+	G4double
 		crystalDepth = 10 * cm,
 		cutValue = 1 * mm;
-	std::string 
+	std::string
 		scintillatorType = "CeBr3",
 		physicsListName = "emlivermore";
-	G4int 
-		numberOfEvent = 1000000;
+	uint64_t
+		numberOfEvent = 1000000,
+		eventsSliceSize = 1000000;
 
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -191,22 +192,22 @@ int main(int argc, char** argv) {
 	}
 	else {
 		energies = {
-		//100 * keV,
-		//200 * keV,
-		//300 * keV,
-		//400 * keV,
-		//500 * keV,
-		//600 * keV,
-		//700 * keV,
-		//800 * keV,
-		//900 * keV,
-		//1000 * keV,
-		//1250 * keV,
-		//1500 * keV,
-		//2000 * keV,
-		//3000 * keV,
-		//4000 * keV,
-		5000 * keV };
+			//100 * keV,
+			//200 * keV,
+			//300 * keV,
+			//400 * keV,
+			//500 * keV,
+			//600 * keV,
+			//700 * keV,
+			//800 * keV,
+			//900 * keV,
+			//1000 * keV,
+			//1250 * keV,
+			//1500 * keV,
+			//2000 * keV,
+			//3000 * keV,
+			//4000 * keV,
+			5000 * keV };
 	}
 
 	G4String pname = "gamma";
@@ -245,7 +246,11 @@ int main(int argc, char** argv) {
 		// start a run
 		checkpoint;
 		OTPCgun->getEnergy()[0] = energy; //set energy for each run
-		runManager->BeamOn(numberOfEvent);
+		for (uint64_t eventCount = 0; eventCount < numberOfEvent; eventCount += eventsSliceSize) {
+			auto runEventNumber = std::min(eventsSliceSize, numberOfEvent - eventCount);
+			runManager->BeamOn(runEventNumber);
+			std::cout << std::format("Events finished {}/{}\n", std::min(eventCount + eventsSliceSize, numberOfEvent), numberOfEvent);
+		}
 	}
 	auto stop = std::chrono::high_resolution_clock::now();
 	std::cout << double((stop - start).count()) / 1e9 << '\n';

@@ -46,14 +46,14 @@ void OTPCSteppingAction::UserSteppingAction(const G4Step* aStep)
 
 	G4String nameP = aStep->GetTrack()->GetDefinition()->GetParticleName();
 
-	if (process) {
-
-
+	if (true && process) {
 		//if (edep>0.0 & currentMaterialName == "GasOTPC" & nameP=="alpha"){
 		//if (edep > 0.0 & currentMaterialName == "GasOTPC") {
 		//
 		G4StepPoint* prePoint = aStep->GetPreStepPoint();
 		G4StepPoint* postPoint = aStep->GetPostStepPoint();
+
+		auto materialName = prePoint->GetMaterial()->GetName();
 
 		G4double x1 = prePoint->GetPosition().x();
 		G4double x2 = postPoint->GetPosition().x();
@@ -68,19 +68,7 @@ void OTPCSteppingAction::UserSteppingAction(const G4Step* aStep)
 
 		auto processName = process->GetProcessName();
 
-		if (processName == "RadioactiveDecay") {
-			const G4RadioactiveDecay* decayProcess = dynamic_cast<const G4RadioactiveDecay*>(process);
-			if (decayProcess) {
-				//decayProcess->DumpInfo();
-				//std::cout << decayProcess-> <<;
-				//const G4DynamicParticle* daughter1 = decayProcess->GetProcessTypeName();
-				//const G4DynamicParticle* daughter2 = decayProcess->GetDaughter(1);
-				//
-				//G4ParticleDefinition* particle1 = daughter1->GetDefinition();
-				//G4ParticleDefinition* particle2 = daughter2->GetDefinition();
-			}
-		}
-		eventAction->addProcess(x, y, z, processName);
+		eventAction->addProcess(x / mm, y / mm, z / mm, processName + '\t' + nameP);
 		//eventAction->addEdep(edep / keV, x / mm, y / mm, z / mm);
 		//G4cout<<edep/keV<<"    "<<x/mm<<"    "<<y/mm<<"    "<<z/mm<<G4endl;
 	}

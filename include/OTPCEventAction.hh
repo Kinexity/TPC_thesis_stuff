@@ -31,7 +31,7 @@ class OTPCEventAction : public G4UserEventAction
 {
 public:
 	OTPCEventAction(OTPCRunAction*);
-	~OTPCEventAction();
+	~OTPCEventAction() = default;
 
 public:
 	void BeginOfEventAction(const G4Event*);
