@@ -22,11 +22,8 @@
 #include "iomanip"
 #include <cstdlib>
 
-#include "G4SystemOfUnits.hh"
 
 #include "OTPCRunAction.hh"
-
-using namespace std;
 
 inline std::string filename_string(std::string path_str) {
 	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
@@ -48,7 +45,7 @@ OTPCPrimaryGeneratorAction::OTPCPrimaryGeneratorAction(OTPCRunAction* RunAct)
 
 	//////////Reading the input data for primary generator///////////
 
-	ifstream evenInputInformation;
+	std::ifstream evenInputInformation;
 	evenInputInformation.open("../../../particles3.data");
 	if (!evenInputInformation.is_open()) {
 		std::cout << "\n\nNO EVENT INPUT INFORMATION FILE FOUND!!!" << _endl_;
@@ -61,7 +58,10 @@ OTPCPrimaryGeneratorAction::OTPCPrimaryGeneratorAction(OTPCRunAction* RunAct)
 	evenInputInformation >> header2;
 	evenInputInformation >> E[0] >> E[1] >> E[2];
 	evenInputInformation.close();
-	G4cout << E[0] << " " << E[1] << " " << E[2] << endl;
+	for (auto& energy : E) {
+		energy *= keV;
+	}
+	G4cout << E[0] / keV << " " << E[1] / keV << " " << E[2] / keV << '\n';
 
 	// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/*
@@ -140,33 +140,30 @@ void OTPCPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 	//Random initial point inside OTPC (70% of volume, excluding sides)
 
-	//x=-0.35*RangeX+G4UniformRand()*0.7*RangeX;
-	//y=-0.35*RangeY+G4UniformRand()*0.7*RangeY;
-	//z=-0.35*RangeZ+G4UniformRand()*0.7*RangeZ;
-
-	x = 0.0 * mm;
-	y = 0.0 * mm;
-	z = 0.0 * mm;
+	position = G4ThreeVector(
+		-0.35 * RangeX + G4UniformRand() * 0.7 * RangeX,
+		-0.35 * RangeY + G4UniformRand() * 0.7 * RangeY,
+		-0.35 * RangeZ + G4UniformRand() * 0.7 * RangeZ
+	);
 
 	G4double aperture = 180. * degree;
 
 	for (int i = 0; i < 3; i++) {
-		theta[i] = acos(1. + (cos(aperture) - 1.) * G4UniformRand());
+		theta[i] = std::acos(1. + (std::cos(aperture) - 1.) * G4UniformRand());
 		phi[i] = CLHEP::twopi * G4UniformRand();
 	}
 
-	//metaFile << std::format("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", E[0] / keV, E[1] / keV, E[2] / keV, x / mm, y / mm, z / mm, theta[0] / degree, theta[1] / degree, theta[3] / degree, phi[0] / degree, phi[1] / degree, phi[2] / degree);
-	std::array tpl = { E[0] / keV, E[1] / keV, E[2] / keV, x / mm, y / mm, z / mm, theta[0] / degree, theta[1] / degree, theta[3] / degree, phi[0] / degree, phi[1] / degree, phi[2] / degree };
+	std::array tpl = { E[0] / keV, E[1] / keV, E[2] / keV, position.x() / mm, position.y() / mm, position.z() / mm, theta[0] / degree, theta[1] / degree, theta[3] / degree, phi[0] / degree, phi[1] / degree, phi[2] / degree };
 	metaFile.write((char*)tpl.data(), sizeof(tpl));
 
-	for (G4int i = 0; i < 1; i++) {
+	for (G4int i = 0; i < 3; i++) {
 		if (type[i] > 0 & type[i] < 5) {
 			//Momentum direction according to input angles
 			G4ThreeVector momentumDirection;
 			momentumDirection.setRThetaPhi(1., theta[i], phi[i]);
 			particleGun->SetParticleDefinition(particleDefinitions[type[i] - 1]);
 
-			particleGun->SetParticlePosition(G4ThreeVector(x, y, z));
+			particleGun->SetParticlePosition(position);
 			particleGun->SetParticleMomentumDirection(momentumDirection);
 			particleGun->SetParticleEnergy(E[i]);
 			particleGun->GeneratePrimaryVertex(anEvent);
@@ -180,8 +177,16 @@ void OTPCPrimaryGeneratorAction::setRunPath(std::filesystem::path runPath) {
 	metaFile.open(runPath / "metadata.bin", std::ios_base::binary | std::ios_base::out);
 }
 
-std::array<G4double, 3>& OTPCPrimaryGeneratorAction::getEnergy() {
-	return E;
+G4double OTPCPrimaryGeneratorAction::getEnergy() const {
+	return E[0];
+}
+
+void OTPCPrimaryGeneratorAction::setEnergy(G4double energy) {
+	E[0] = energy;
+}
+
+void OTPCPrimaryGeneratorAction::setPosition(G4ThreeVector pos) {
+	position = pos;
 }
 
 

@@ -37,23 +37,28 @@ void OTPCEventAction::BeginOfEventAction(const G4Event*) {
 	EnergyDeposit.clear();
 	ProcessStep.clear();
 	TotalEnergyDepositCrystal.fill(0);
+	TotalEnergyDepositGas = 0;
 }
 
 void OTPCEventAction::EndOfEventAction(const G4Event* evt) {
 
 	//runAction->fillOut(EnergyDeposit, TotalEnergyDepositCrystal);
 	G4double totalEnergy = std::reduce(TotalEnergyDepositCrystal.begin(), TotalEnergyDepositCrystal.end());
-	runAction->fillOut(ProcessStep, totalEnergy);
-	if (totalEnergy > 0) {
-		runAction->fillOut(TotalEnergyDepositCrystal);
+	runAction->fillOutSteps(ProcessStep, totalEnergy);
+	runAction->fillOutGasIonization(TotalEnergyDepositGas);
+	if (includeZeroEnergy || totalEnergy > 0) {
+		runAction->fillOutScintillation(TotalEnergyDepositCrystal);
 	}
 	runAction->updateEventCounter();
 
 }
 
-void OTPCEventAction::add_E_i(G4int nCrystal, G4double edep)
-{
+void OTPCEventAction::depositEnergyOnCrystal(G4int nCrystal, G4double edep) {
 	TotalEnergyDepositCrystal[nCrystal] += edep; //we have to initialize this variable at the beginning of the EventAction
+}
+
+void OTPCEventAction::depositEnergyOnGas(G4double edep) {
+	TotalEnergyDepositGas += edep;
 }
 
 void OTPCEventAction::addEdep(G4double Edep, G4double x, G4double y, G4double z) {

@@ -100,13 +100,17 @@ int main(int argc, char** argv) {
 		dataOverwrite = false;
 	G4double
 		crystalDepth = 10 * cm,
-		cutValue = 1 * mm;
+		cutValue = 0.01 * mm;
 	std::string
 		scintillatorType = "CeBr3",
-		physicsListName = "emlivermore";
+		physicsListName = "emlivermore",
+		positionalArg,
+		additionalInfo;
 	uint64_t
 		numberOfEvent = 1000000,
 		eventsSliceSize = 1000000;
+	G4ThreeVector
+		particleInitialPosition;
 
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -120,13 +124,21 @@ int main(int argc, char** argv) {
 		std::filesystem::create_directory(resultsDirectoryPath);
 	}
 
-	if (argc > 1) {
-		numberOfEvent = std::stoi(argv[1]);
-		scintillatorType = argv[2];
-		crystalDepth = std::stod(argv[3]) * cm;
-		physicsListName = argv[4];
-		cutValue = std::stod(argv[5]) * mm;
+	switch (argc) {
+	case 8:
+		positionalArg = argv[7];
+	case 7:
 		skipIfDataExists = std::stoi(argv[6]);
+	case 6:
+		cutValue = std::stod(argv[5]) * mm;
+	case 5:
+		physicsListName = argv[4];
+	case 4:
+		crystalDepth = std::stod(argv[3]) * cm;
+	case 3:
+		scintillatorType = argv[2];
+	case 2:
+		numberOfEvent = std::stoi(argv[1]);
 	}
 
 	// Choose the random engine and initialize
@@ -192,32 +204,50 @@ int main(int argc, char** argv) {
 	}
 	else {
 		energies = {
-			//100 * keV,
-			//200 * keV,
-			//300 * keV,
-			//400 * keV,
-			//500 * keV,
-			//600 * keV,
-			//700 * keV,
-			//800 * keV,
-			//900 * keV,
-			//1000 * keV,
-			//1250 * keV,
-			//1500 * keV,
-			//2000 * keV,
-			//3000 * keV,
-			//4000 * keV,
+			100 * keV,
+			200 * keV,
+			300 * keV,
+			400 * keV,
+			500 * keV,
+			600 * keV,
+			700 * keV,
+			800 * keV,
+			900 * keV,
+			1000 * keV,
+			1250 * keV,
+			1500 * keV,
+			2000 * keV,
+			3000 * keV,
+			4000 * keV,
 			5000 * keV };
 	}
+
+	if (positionalArg.length() == 4) { // move particle source
+		int
+			xPositionSetting = std::stoi(positionalArg.substr(0, 2)),
+			yPositionSetting = std::stoi(positionalArg.substr(2, 1)),
+			zPositionSetting = std::stoi(positionalArg.substr(3, 1));
+		auto corner = OTPCdetector->getChamberCorner();
+		particleInitialPosition = {
+			corner.getX() * xPositionSetting,
+			corner.getY() * yPositionSetting,
+			corner.getZ() * zPositionSetting
+		};
+		OTPCgun->setPosition(particleInitialPosition);
+		additionalInfo = std::format("_{}", positionalArg);
+	}
+
 
 	G4String pname = "gamma";
 	std::string runDirectoryName;
 	std::filesystem::path runDirectoryPath;
-	std::string paramString = std::format("{}_{}cm_{}_{}mm",
+	std::string paramString = std::format("{}_{}cm_{}_{}mm{}",
 		OTPCdetector->getScintillatorType(),
 		OTPCdetector->getCrystalDepth() / cm,
 		OTPCphysList->getPhysicsListName(),
-		OTPCphysList->GetCutValue(pname) / mm);
+		OTPCphysList->GetCutValue(pname) / mm,
+		additionalInfo);
+	// find first available simulation index
 	for (int i = 0;; i++) {
 		runDirectoryName = std::format("event_{}_{}",
 			paramString,
@@ -225,33 +255,34 @@ int main(int argc, char** argv) {
 		runDirectoryPath = resultsDirectoryPath / runDirectoryName;
 		if (std::filesystem::exists(runDirectoryPath) && skipIfDataExists) {
 			std::cout << "Data exists. Aborting simulation." << _endl_;
-			return 0;
+			return 0; // data exist, exit program
 		}
 		if (!std::filesystem::exists(runDirectoryPath) || dataOverwrite) {
-			break;
+			break; // index found
 		}
 	}
 	std::filesystem::create_directory(runDirectoryPath);
 	OTPCdetector->saveDetails(runDirectoryPath);
 	OTPCgun->setRunPath(runDirectoryPath);
-	for (auto energy : energies) {
+	// iterate over energies
+	//for (auto energy : energies) {
+		//OTPCgun->setEnergy(energy); //set energy for each run
 		auto partialFileName = std::format("event_{}keV_{}_",
-			energy / keV,
+			OTPCgun->getEnergy() / keV,
 			paramString);
 		auto eventTotalDepositFileName = partialFileName + "totalDeposit";
 		auto eventStepsDepositFileName = partialFileName + "stepsDeposit";
 		auto eventTotalDepositFilePath = runDirectoryPath / eventTotalDepositFileName;
 		auto eventStepsDepositFilePath = runDirectoryPath / eventStepsDepositFileName;
 		OTPCrun->setEventFilePath(eventTotalDepositFilePath, eventStepsDepositFilePath);
-		// start a run
 		checkpoint;
-		OTPCgun->getEnergy()[0] = energy; //set energy for each run
+		// start a run
 		for (uint64_t eventCount = 0; eventCount < numberOfEvent; eventCount += eventsSliceSize) {
 			auto runEventNumber = std::min(eventsSliceSize, numberOfEvent - eventCount);
 			runManager->BeamOn(runEventNumber);
 			std::cout << std::format("Events finished {}/{}\n", std::min(eventCount + eventsSliceSize, numberOfEvent), numberOfEvent);
 		}
-	}
+	//}
 	auto stop = std::chrono::high_resolution_clock::now();
 	std::cout << double((stop - start).count()) / 1e9 << '\n';
 	// job termination

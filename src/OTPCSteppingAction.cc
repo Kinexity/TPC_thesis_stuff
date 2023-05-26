@@ -41,14 +41,15 @@ void OTPCSteppingAction::UserSteppingAction(const G4Step* aStep)
 	G4TouchableHandle touch = aStep->GetPreStepPoint()->GetTouchableHandle();
 	const std::string currentMaterialName = touch->GetVolume()->GetLogicalVolume()->GetMaterial()->GetName();
 	const G4VProcess* process = aStep->GetPostStepPoint()->GetProcessDefinedStep();
-	G4double EdepStep;
 	G4int begin;
 
 	G4String nameP = aStep->GetTrack()->GetDefinition()->GetParticleName();
 
-	if (true && process) {
-		//if (edep>0.0 & currentMaterialName == "GasOTPC" & nameP=="alpha"){
-		//if (edep > 0.0 & currentMaterialName == "GasOTPC") {
+	std::cout << aStep->GetTrack()->GetParentID() << '\n';
+
+	if (false && process) {
+	//if (edep>0.0 & currentMaterialName == "GasOTPC" & nameP=="alpha"){
+	//if (edep > 0.0 & currentMaterialName == "GasOTPC") {
 		//
 		G4StepPoint* prePoint = aStep->GetPreStepPoint();
 		G4StepPoint* postPoint = aStep->GetPostStepPoint();
@@ -68,15 +69,19 @@ void OTPCSteppingAction::UserSteppingAction(const G4Step* aStep)
 
 		auto processName = process->GetProcessName();
 
-		eventAction->addProcess(x / mm, y / mm, z / mm, processName + '\t' + nameP);
-		//eventAction->addEdep(edep / keV, x / mm, y / mm, z / mm);
+		//eventAction->addProcess(x / mm, y / mm, z / mm, processName + '\t' + nameP);
+		eventAction->addEdep(edep / keV, x / mm, y / mm, z / mm);
 		//G4cout<<edep/keV<<"    "<<x/mm<<"    "<<y/mm<<"    "<<z/mm<<G4endl;
 	}
 
-	if (edep > 0.0 && currentMaterialName == scintilatorType) {
-
-		G4int nCrystal = touch->GetCopyNumber(1); //N will be the number of levels up, we have to check it to pickup the index of CeBr3 crystal
-		eventAction->add_E_i(nCrystal, edep / keV);
+	if (edep > 0.0) {
+		if (currentMaterialName == scintilatorType) {
+			G4int nCrystal = touch->GetCopyNumber(1); //N will be the number of levels up, we have to check it to pickup the index of CeBr3 crystal
+			eventAction->depositEnergyOnCrystal(nCrystal, edep / keV);
+		}
+		else if (currentMaterialName == "GasOTPC") {
+			eventAction->depositEnergyOnGas(edep / keV);
+		}
 	}
 
 }

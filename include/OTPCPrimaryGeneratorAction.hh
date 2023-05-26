@@ -10,6 +10,7 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ParticleGun.hh"
+#include "G4SystemOfUnits.hh"
 #include "globals.hh"
 #include <array>
 #include <filesystem>
@@ -30,7 +31,9 @@ public:
 	void GeneratePrimaries(G4Event* anEvent);
 	void setRunPath(std::filesystem::path runPath);
 	G4ParticleGun* GetParticleGun() { return particleGun.get(); };
-	std::array<G4double, 3>& getEnergy();
+	G4double getEnergy() const;
+	void setEnergy(G4double energy);
+	void setPosition(G4ThreeVector pos);
 private:
 	OTPCRunAction* runAction;
 	std::unique_ptr<G4ParticleGun> particleGun;
@@ -38,8 +41,7 @@ private:
 	std::fstream metaFile;
 	std::array<G4double, 3> E, theta, phi;
 	G4int type[3];
-	G4double x, y, z;
-
+	G4ThreeVector position = { 0 * mm, 0 * mm, 0 * mm };
 	std::array<G4ParticleDefinition*, 4> particleDefinitions;
 };
 

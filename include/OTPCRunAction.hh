@@ -18,6 +18,7 @@
 #ifndef OTPCRunAction_h
 #define OTPCRunAction_h 1
 
+#include "G4RunManager.hh"
 #include "G4UserRunAction.hh"
 #include "globals.hh"
 #include <fstream>
@@ -44,8 +45,9 @@ class OTPCRunAction : public G4UserRunAction
 
 
     void fillOut(std::vector<std::array<G4double, 4>>& EnergyDeposit);
-    void fillOut(std::array<G4double, 20>& EnergyGammaCrystals);
-    void fillOut(std::vector<std::tuple<G4double, G4double, G4double, G4String>>& ProcessSteps, G4double totalEnergy);
+    void fillOutScintillation(std::array<G4double, 20>& EnergyGammaCrystals);
+    void fillOutGasIonization(G4double EnergyGas);
+    void fillOutSteps(std::vector<std::tuple<G4double, G4double, G4double, G4String>>& ProcessSteps, G4double totalEnergy);
     
     void updateEventCounter();
 
@@ -54,10 +56,14 @@ private:
    
     std::unique_ptr<G4Timer> timer;
     
+    G4RunManager* runManager;
+    G4double currentEnergy;
+
     std::fstream 
         eventTotalDepositFile,
         eventStepsDepositFile,
         eventTotalDepositFileBinary,
+        eventTotalGasDepositFileBinary,
         eventStepsDepositFileBinary;
    
     uint32_t 

@@ -42,11 +42,33 @@
 #include "G4Polycone.hh"
 
 #include "F02ElectricFieldSetup.hh"
+#include <tuple>
+#include <map>
+#include <functional>
 
-using namespace std;
+template <typename Ret_Type, typename... Func_Args>
+class return_value_wrapper {
+private:
+	std::map<std::tuple<Func_Args...>, Ret_Type> ret_val_map;
+	std::function<Ret_Type(Func_Args...)> func_ptr;
+public:
+	return_value_wrapper(std::function<Ret_Type(Func_Args...)>& f_ptr) : func_ptr(f_ptr) {};
+	return_value_wrapper() = default;
+	~return_value_wrapper() = default;
+	decltype(func_ptr)& operator=(std::function < Ret_Type(Func_Args...)> f_ptr) {
+		ret_val_map.clear();
+		return (func_ptr = f_ptr);
+	}
+	Ret_Type operator()(Func_Args... args) {
+		auto packed = std::make_tuple(args...);
+		const auto it = ret_val_map.find(packed);
+		return (it != ret_val_map.end() ? it->second : (ret_val_map[packed] = func_ptr(args...)));
+	};
+};
+
 
 // Global file with the events
-ifstream geoInputFile;
+std::ifstream geoInputFile;
 
 inline std::string filename_string(std::string path_str) {
 	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
@@ -81,142 +103,88 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct() {
  // define Elements
  //
 
+	auto fn = std::function([&](std::string elementName)->G4Element* {
+		return G4NistManager::Instance()->FindOrBuildElement(elementName);
+	});
+	return_value_wrapper<G4Element*, std::string> periodicTable(fn);
+
    // H
-	G4Element* H = new G4Element("Hydrogen", "H", z = 1., a = 1.01 * g / mole);
+	G4Element* H = periodicTable("H");
 
 	// He
-	G4Isotope* He3 = new G4Isotope("3He", 2, 3, 3.016029 * g / mole);
-	G4Isotope* He4 = new G4Isotope("4He", 2, 4, 4.002603 * g / mole);
-	G4Element* He = new G4Element("Helium", "He", 2);
-	He->AddIsotope(He3, 0.000137 * perCent);
-	He->AddIsotope(He4, 99.999863 * perCent);
+	G4Element* He = periodicTable("He");
 
 	// O
-	G4Element* O = new G4Element("Oxygen", "O", z = 8., a = 16.00 * g / mole);
+	G4Element* O = periodicTable("O");
 
 	// B
-	a = 10.811 * g / mole;
-	G4Element* B = new G4Element(name = "Boron", symbol = "B", z = 5., a);
+	G4Element* B = periodicTable("B");
 
 	// Al
-	a = 26.982 * g / mole;
-	G4Element* Al = new G4Element(name = "Aluminium", symbol = "Al", z = 13., a);
+	G4Element* Al = periodicTable("Al");
 
 	// C
-	G4Isotope* C12 = new G4Isotope("12C", 6, 12, 12 * g / mole);
-	G4Isotope* C13 = new G4Isotope("13C", 6, 13, 13.003355 * g / mole);
-	G4Element* C = new G4Element("Carbon", "C", 2);
-	C->AddIsotope(C12, 98.93 * perCent);
-	C->AddIsotope(C13, 1.07 * perCent);
+	G4Element* C = periodicTable("C");
 
 	// Si
-	a = 28.086 * g / mole;
-	G4Element* Si = new G4Element(name = "Silicium", symbol = "Si", z = 14., a);
+	G4Element* Si = periodicTable("Si");
 
 	// K
-	a = 39.098 * g / mole;
-	G4Element* K = new G4Element(name = "Potasium", symbol = "K", z = 19., a);
+	G4Element* K = periodicTable("K");
 
 	// Cr
-	a = 51.996 * g / mole;
-	G4Element* Cr = new G4Element(name = "Chromium", symbol = "Cr", z = 24., a);
+	G4Element* Cr = periodicTable("Cr");
 
 	// Fe
-	a = 55.845 * g / mole;
-	G4Element* Fe = new G4Element(name = "Iron", symbol = "Fe", z = 26., a);
+	G4Element* Fe = periodicTable("Fe");
 
 	// Ni
-	a = 58.693 * g / mole;
-	G4Element* Ni = new G4Element(name = "Nickel", symbol = "Ni", z = 28., a);
+	G4Element* Ni = periodicTable("Ni");
 
 	// Sb
-	a = 121.76 * g / mole;
-	G4Element* Sb = new G4Element(name = "Antimony", symbol = "Sb", z = 51., a);
+	G4Element* Sb = periodicTable("Sb");
 
 	// Ti
-	a = 47.867 * g / mole;
-	G4Element* Ti = new G4Element(name = "Titanium", symbol = "Ti", z = 22., a);
+	G4Element* Ti = periodicTable("Ti");
 
 	// Ar
-	a = 39.95 * g / mole;
-	G4Element* Ar = new G4Element(name = "Argon", symbol = "Ar", z = 18., a);
+	G4Element* Ar = periodicTable("Ar");
 
 	// Cl
-	a = 35.453 * g / mole;
-	G4Element* Cl = new G4Element(name = "Chlorine", symbol = "Cl", z = 17., a);
+	G4Element* Cl = periodicTable("Cl");
 
 	//F
-	a = 18.998 * g / mole;
-	G4Element* F = new G4Element(name = "Fluorine", "F", z = 9., a);
+	G4Element* F = periodicTable("F");
 
 	// Na
-	a = 22.989770 * g / mole;
-	G4Element* Na = new G4Element(name = "Sodium", "Na", 11, a);
+	G4Element* Na = periodicTable("Na");
 
 	// Mg
-	a = 24.3050 * g / mole;
-	G4Element* Mg = new G4Element(name = "Magnesium", "Mg", 12, a);
+	G4Element* Mg = periodicTable("Mg");
 
 	// Ca
-	a = 40.078 * g / mole;
-	G4Element* Ca = new G4Element(name = "Calcium", "Ca", 20, a);
+	G4Element* Ca = periodicTable("Ca");
 
 	// Ce
-	G4Isotope* Ce136 = new G4Isotope("136Ce", 58, 136, 135.907144 * g / mole);
-	G4Isotope* Ce138 = new G4Isotope("138Ce", 58, 138, 137.905434 * g / mole);
-	G4Isotope* Ce140 = new G4Isotope("140Ce", 58, 140, 139.905434 * g / mole);
-	G4Isotope* Ce142 = new G4Isotope("142Ce", 58, 142, 141.909240 * g / mole);
-	G4Element* Ce = new G4Element("Cerium", "Ce", 4);
-	Ce->AddIsotope(Ce136, 0.185 * perCent);
-	Ce->AddIsotope(Ce138, 0.251 * perCent);
-	Ce->AddIsotope(Ce140, 88.450 * perCent);
-	Ce->AddIsotope(Ce142, 11.114 * perCent);
-	// Ce
-	//a = 132.91 * g / mole;
-	//G4Element* Ce = new G4Element(name = "Cerium", "Ce", 58, a);
-
-
-	// Br
-	a = 79.904 * g / mole;
-	G4Element* Br = new G4Element(name = "Bromine", "Br", 35, a);
-
-	// N
-	G4Isotope* N14 = new G4Isotope("14N", 7, 14, 14.003 * g / mole);
-	G4Isotope* N15 = new G4Isotope("15N", 7, 15, 15.000 * g / mole);
-	G4Element* N = new G4Element("Nitrogen", "N", 2);
-	N->AddIsotope(N14, 99.632 * perCent);
-	N->AddIsotope(N15, 0.368 * perCent);
-
-
-	// Cs
-	G4Isotope* Cs133 = new G4Isotope(name = "Cs133", iz = 55, n = 133, a = 132.905 * g / mole);
-	G4Element* Cs = new G4Element(name = "Cesium", symbol = "Cs", ncomponents = 1);
-	Cs->AddIsotope(Cs133, 100 * perCent);
-
-	// Cu
-	G4Isotope* Cu63 = new G4Isotope("63Cu", 29, 63, 62.929601 * g / mole);
-	G4Isotope* Cu65 = new G4Isotope("65Cu", 29, 65, 64.927794 * g / mole);
-	G4Element* Cu = new G4Element("Copper", "Cu", 2);
-	Cu->AddIsotope(Cu63, 69.17 * perCent);
-	Cu->AddIsotope(Cu65, 30.83 * perCent);
-
-	// Ge
-	G4Isotope* Ge70 = new G4Isotope(name = "Ge70", iz = 32, n = 70, a = 69.924250 * g / mole);
-	G4Isotope* Ge72 = new G4Isotope(name = "Ge72", iz = 32, n = 72, a = 71.922076 * g / mole);
-	G4Isotope* Ge73 = new G4Isotope(name = "Ge73", iz = 32, n = 73, a = 72.923459 * g / mole);
-	G4Isotope* Ge74 = new G4Isotope(name = "Ge74", iz = 32, n = 74, a = 73.921178 * g / mole);
-	G4Isotope* Ge76 = new G4Isotope(name = "Ge76", iz = 32, n = 76, a = 75.921403 * g / mole);
-
-	G4Element* Ge = new G4Element(name = "Germanium", symbol = "Ge", ncomponents = 5);
-	Ge->AddIsotope(Ge70, abundance = 20.84 * perCent);
-	Ge->AddIsotope(Ge72, abundance = 27.54 * perCent);
-	Ge->AddIsotope(Ge73, abundance = 7.73 * perCent);
-	Ge->AddIsotope(Ge74, abundance = 36.28 * perCent);
-	Ge->AddIsotope(Ge76, abundance = 7.61 * perCent);
+	G4Element* Ce = periodicTable("Ce");
 
 	// La
-	a = 138.91 * g / mole;
-	G4Element* La = new G4Element(name = "Lanthanum", "La", 57, a);
+	G4Element* La = periodicTable("La");
+
+	// Cu
+	G4Element* Cu = periodicTable("Cu");
+
+	// Cs
+	G4Element* Cs = periodicTable("Cs");
+
+	// N
+	G4Element* N = periodicTable("N");
+
+	// Ge
+	G4Element* Ge = periodicTable("Ge");
+
+	// Br
+	G4Element* Br = periodicTable("Br");
 
 	//
 	// define simple materials
@@ -472,7 +440,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct() {
 	// GAS OTPC 
 	//////////Reading the input data for primary generator///////////
 
-	ifstream geoInputFile("../../../geo.data");
+	std::ifstream geoInputFile("../../../geo.data");
 
 	if (!geoInputFile.is_open()) {
 		std::cout << "\n\nNO GEO INPUT INFORMATION FILE FOUND!!!" << _endl_;
@@ -515,7 +483,7 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct() {
 	//Individual gass constant calculation:
 	G4double K_gas = 8314.4598 * 1e3 * pascal * cm3 / (mole * kelvin); //in kPa.cm3/(mol.K)
 
-	//std::vector<G4Material*> gases = { CF4, Argon, Helium, Nitrogen };
+	std::vector<std::tuple<G4Element*, int>> gases;
 
 	G4int Ngases = 0;
 	for (G4int k = 0; k < 3; k++) {
@@ -523,24 +491,28 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct() {
 			switch (gas[k]) {
 			case 1:
 				Ngases += 2; // Two components!
-				gas_amu += fgas[k] * CF4_amu; // fgas are in %!
+				gas_amu += fgas[k] * CF4_amu;
+				gases.emplace_back(C, int(1e5 * fgas[k])); // Add C to gases vector
+				gases.emplace_back(F, int(1e5 * fgas[k] * 4)); // Add F to gases vector
 				break;
 			case 2:
 				Ngases++;
-				gas_amu += fgas[k] * Ar_amu; // fgas are in %!
+				gas_amu += fgas[k] * Ar_amu;
+				gases.emplace_back(Ar, int(1e5 * fgas[k])); // Add Ar to gases vector
 				break;
 			case 3:
 				Ngases++;
-				gas_amu += fgas[k] * He_amu; // fgas are in %!
+				gas_amu += fgas[k] * He_amu;
+				gases.emplace_back(He, int(1e5 * fgas[k])); // Add He to gases vector
 				break;
 			case 4:
 				Ngases++;
-				gas_amu += fgas[k] * N2_amu; // fgas are in %!
+				gas_amu += fgas[k] * N2_amu;
+				gases.emplace_back(N, int(1e5 * fgas[k] * 2)); // Add N to gases vector
 				break;
 			default:
 				break;
 			}
-
 		}
 	}
 	G4cout << "Gas atomic components " << Ngases << G4endl;
@@ -551,33 +523,18 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct() {
 	//Densities for this T and P:
 	G4double d = P / (K_gas_mixture * T); //in g/cm3
 
-	G4cout << "Density: " << endl;
-	G4cout << d / (g / cm3) << "g/cm3" << endl;
-	G4cout << d / (mg / cm3) << "mg/cm3" << endl;
+	G4cout << "Density: \n";
+	G4cout << d / (g / cm3) << "g/cm3\n";
+	G4cout << d / (mg / cm3) << "mg/cm3\n";
 
 
 	G4Material* GasOTPC = new G4Material(name = "GasOTPC", d, ncomponents = Ngases, kStateGas, T, P);
 
 	//In atoms!
-	for (G4int k = 0; k < 3; k++) {
-		if (fgas[k] > 0) {
-			switch (gas[k]) {
-			case 1:
-				GasOTPC->AddElement(C, int(1e5 * fgas[k]));  //CF4
-				GasOTPC->AddElement(F, int(1e5 * fgas[k] * 4));
-				break;
-			case 2:
-				GasOTPC->AddElement(Ar, int(1e5 * fgas[k]));  //Ar
-				break;
-			case 3:
-				GasOTPC->AddElement(He, int(1e5 * fgas[k])); //He
-				break;
-			case 4:
-				GasOTPC->AddElement(N, int(1e5 * fgas[k] * 2));  //N2
-				break;
-			default:
-				break;
-			}
+	// Create G4Element and G4Material instances from gases vector
+	for (auto& [elem, num] : gases) {
+		if (num > 0) {
+			GasOTPC->AddElement(elem, num);
 		}
 	}
 
@@ -676,6 +633,11 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct() {
 		electrode_placements.push_back(new G4PVPlacement(0, position, oneElectrodeLogical, "electrodePhysical", activeVolumeLogical, false, i));
 	}
 
+	chamberCorner = { // add 1cm margin to not put particles in the walls
+		oneElectrodePlaneInternalVolumeSolid->GetXHalfLength() - 1 * cm,
+		oneElectrodePlaneInternalVolumeSolid->GetYHalfLength() - 1 * cm,
+		activeVolumeSolid->GetZHalfLength() - 1 * cm };
+
 	//<--------------------------------------------------------------------------------------------------------------------------------->
 	//<---------------------------------------------------------Gamma detectors--------------------------------------------------------->
 	//<--------------------------------------------------------------------------------------------------------------------------------->
@@ -697,9 +659,6 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct() {
 
 	// gamma detector logical volume
 	G4LogicalVolume* gammaDetectorVolumeLogical = new G4LogicalVolume(gammaDetectorVolumeSolid, Vacuum, "gammaDetectorVolumeLogical");
-
-	// gamma detector physical
-	//G4VPhysicalVolume* physiMotherGammaDetector = new G4PVPlacement(rotation, G4ThreeVector(), "physiMotherGammaDetector", gammaDetectorVolumeLogical, NULL, false, 0);
 
 	// vector of gamma detector placements, idk why but I think it's needed for the placements to work
 	std::vector<G4VPhysicalVolume*> gammaDetectorPlacements;
@@ -838,16 +797,28 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct() {
 	//
 	// always return the physical World
 	//
-
+	isInitialized = true; //detector has been constructed
 	return physiWorld;
 }
 
 const G4double OTPCDetectorConstruction::getCrystalDepth() {
-	return crystalDepth;
+	if (isInitialized) {
+		return crystalDepth;
+	}
+	else {
+		std::cout << "Error: detector not constructed" << _endl_;
+		exit(1);
+	}
 }
 
 const std::string& OTPCDetectorConstruction::getScintillatorType() {
+	//if (isInitialized) {
 	return realScintillatorType;
+	//}
+	//else {
+	//	std::cout << "Error: detector not constructed" << _endl_;
+	//	exit(1);
+	//}
 }
 
 void OTPCDetectorConstruction::saveDetails(std::filesystem::path p) {
@@ -905,4 +876,14 @@ void OTPCDetectorConstruction::saveDetails(std::filesystem::path p) {
 	outfile.close();
 	outfile_isotopes.close();
 
+}
+
+G4ThreeVector OTPCDetectorConstruction::getChamberCorner() {
+	if (isInitialized) {
+		return chamberCorner;
+	}
+	else {
+		std::cout << "Error: detector not constructed" << _endl_;
+		exit(1);
+	}
 }

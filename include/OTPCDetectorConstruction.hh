@@ -42,6 +42,7 @@ public:
 	const G4double getCrystalDepth();
 	const std::string& getScintillatorType();
 	void saveDetails(std::filesystem::path p);
+	G4ThreeVector getChamberCorner();
 private:
 	F02ElectricFieldSetup* fEmFieldSetup;
 	G4String              header1, header2, header3;
@@ -49,10 +50,12 @@ private:
 	std::array<G4double, 3> fgas;
 	G4double T, P, E, d;
 
+	bool isInitialized = false;
 	const bool removeGroup0 = false;
 	G4double crystalDepth = 10 * cm;
 	std::string scintillatorType = "CeBr3";
 	std::string realScintillatorType = "error";
+	G4ThreeVector chamberCorner;
 };
 
 #endif

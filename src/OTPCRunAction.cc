@@ -14,6 +14,7 @@
 ///////////////////////////////////////////////////////////////
 
 #include "OTPCRunAction.hh"
+#include "OTPCPrimaryGeneratorAction.hh"
 
 #include "G4Run.hh"
 
@@ -38,6 +39,7 @@ OTPCRunAction::OTPCRunAction()
 {
 	timer = std::make_unique<G4Timer>();
 
+	runManager = G4RunManager::GetRunManager();
 
 	///////////////////////////////////////////////////////////////////////////////////	
 
@@ -48,7 +50,9 @@ void OTPCRunAction::BeginOfRunAction(const G4Run*)
 	//eventTotalDepositFile.open(eventTotalDepositFilePath.string() + ".csv", std::ios_base::out | std::ios_base::trunc);
 	//eventStepsDepositFile.open(eventStepsDepositFilePath.string() + ".csv", std::ios_base::out | std::ios_base::trunc);
 	eventTotalDepositFileBinary.open(eventTotalDepositFilePath.string() + ".bin", std::ios_base::out | std::ios_base::binary | std::ios_base::app);
+	eventTotalGasDepositFileBinary.open(eventTotalDepositFilePath.string() + "_gas.bin", std::ios_base::out | std::ios_base::binary | std::ios_base::app);
 	//eventStepsDepositFileBinary.open(eventStepsDepositFilePath.string() + ".bin", std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+	currentEnergy = reinterpret_cast<const OTPCPrimaryGeneratorAction*>(runManager->GetUserPrimaryGeneratorAction())->getEnergy();
 	//Start CPU timer
 	timer->Start();
 	eventIndex = 0;
@@ -60,6 +64,7 @@ void OTPCRunAction::EndOfRunAction(const G4Run*)
 	//eventTotalDepositFile.close();
 	//eventStepsDepositFile.close();
 	eventTotalDepositFileBinary.close();
+	eventTotalGasDepositFileBinary.close();
 	//eventStepsDepositFileBinary.close();
 	//Stop timer and get CPU time
 	timer->Stop();
@@ -77,22 +82,26 @@ void OTPCRunAction::fillOut(std::vector<std::array<G4double, 4>>& EnergyDeposit)
 	}
 }
 
-void OTPCRunAction::fillOut(std::array<G4double, 20>& EnergyGammaCrystals) {
+void OTPCRunAction::fillOutScintillation(std::array<G4double, 20>& EnergyGammaCrystals) {
 	eventTotalDepositFileBinary.write((char*)EnergyGammaCrystals.data(), EnergyGammaCrystals.size() * sizeof(G4double));
-	
+
 	//for (auto& EnergyDepositOneCrystal : EnergyGammaCrystals) {
 	//	eventTotalDepositFile << EnergyDepositOneCrystal << '\t';
 	//}
 	//eventTotalDepositFile << "\n";
-	
+
 }
 
-void OTPCRunAction::fillOut(std::vector<std::tuple<G4double, G4double, G4double, G4String>>& ProcessSteps, G4double totalEnergy) {
+void OTPCRunAction::fillOutGasIonization(G4double EnergyGas) {
+	eventTotalGasDepositFileBinary.write((char*)&EnergyGas, sizeof(EnergyGas));
+}
+
+void OTPCRunAction::fillOutSteps(std::vector<std::tuple<G4double, G4double, G4double, G4String>>& ProcessSteps, G4double totalEnergy) {
 	decayCounter += std::any_of(std::execution::par, ProcessSteps.begin(), ProcessSteps.end(),
 		[](const std::tuple<G4double, G4double, G4double, G4String>& tuple) {
 			return std::get<3>(tuple).find("RadioactiveDecay") != std::string::npos;
 		});
-	if (ProcessSteps.size() > 0 && totalEnergy > 5000 * 1.001) {
+	if (ProcessSteps.size() > 0 && totalEnergy > currentEnergy * 1.001) {
 		eventStepsDepositFile.open(eventStepsDepositFilePath.string() + std::format("_{}.txt", eventIndex), std::ios_base::out | std::ios_base::trunc);
 		for (auto [x, y, z, step] : ProcessSteps) {
 			eventStepsDepositFile << std::format("{}\t{}\t{}\t{}\n", x, y, z, step);

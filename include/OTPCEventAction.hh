@@ -38,7 +38,8 @@ public:
 	void EndOfEventAction(const G4Event*);
 	void addEdep(G4double Edep, G4double x, G4double y, G4double z);
 	void addProcess(G4double x, G4double y, G4double z, G4String name);
-	void add_E_i(G4int nCrystal, G4double edep);
+	void depositEnergyOnCrystal(G4int nCrystal, G4double edep);
+	void depositEnergyOnGas(G4double edep);
 
 private:
 	OTPCRunAction* runAction;
@@ -50,6 +51,9 @@ private:
 		EnergyDeposit;
 	std::array<G4double, 20>
 		TotalEnergyDepositCrystal = { 0 };
+	G4double
+		TotalEnergyDepositGas;
+	const bool includeZeroEnergy = true;
 };
 
 #endif
