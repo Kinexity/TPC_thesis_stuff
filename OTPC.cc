@@ -57,47 +57,15 @@
 #include <format>
 #include <algorithm>
 #include <numeric>
-
-inline std::string filename_string(std::string path_str) {
-	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
-};
-
-#define _endl_ " (" << filename_string(__FILE__) << "; " << __LINE__ << ")" << '\n'
-#define checkpoint std::cout << "checkpoint" << _endl_
-
-//using namespace std;
-
-std::string get_date_string() {
-	auto now = std::chrono::system_clock::now();
-	auto current_time = std::chrono::system_clock::to_time_t(now);
-
-	std::tm date;
-	localtime_s(&date, &current_time);
-
-	char buffer[100];
-	strftime(buffer, 100, "%Y-%m-%d-%H-%M-%S", &date);
-
-	return std::format("[{}]", buffer);
-}
-
-std::vector<double> nums(double start, double end, size_t N) {
-	if (N < 2 || start > end) {
-		throw;
-	}
-	std::vector<double> v;
-	auto mult = std::pow(end / start, 1. / (N - 1));
-	for (int i = 0; i < N; i++) {
-		v.push_back(start * std::pow(mult, i));
-	}
-	return v;
-};
+#include "utilities.h"
 
 int main(int argc, char** argv) {
 
 	bool
 		isDense = false,
 		skipIfDataExists = false,
-		dataOverwrite = false;
+		dataOverwrite = false,
+		loadDataFromFile = false;
 	G4double
 		crystalDepth = 10 * cm,
 		cutValue = 0.01 * mm;
@@ -105,7 +73,7 @@ int main(int argc, char** argv) {
 		scintillatorType = "CeBr3",
 		physicsListName = "emlivermore",
 		positionalArg,
-		additionalInfo;
+		additionalInfo = "";
 	uint64_t
 		numberOfEvent = 1000000,
 		eventsSliceSize = 1000000;
@@ -125,6 +93,8 @@ int main(int argc, char** argv) {
 	}
 
 	switch (argc) {
+	case 9:
+		loadDataFromFile = argv[8];
 	case 8:
 		positionalArg = argv[7];
 	case 7:
@@ -181,7 +151,7 @@ int main(int argc, char** argv) {
 	checkpoint;
 	// set mandatory user action class
 	OTPCPrimaryGeneratorAction*
-		OTPCgun = new OTPCPrimaryGeneratorAction(OTPCrun);
+		OTPCgun = new OTPCPrimaryGeneratorAction(OTPCrun, loadDataFromFile);
 	runManager->SetUserAction(OTPCgun);
 
 	checkpoint;
@@ -202,24 +172,27 @@ int main(int argc, char** argv) {
 	if (isDense) {
 		energies = nums(100 * keV, 5000 * keV, 250);
 	}
+	else if (loadDataFromFile) {
+		energies.push_back(0); // add dummy value to do one run loop
+	}
 	else {
 		energies = {
-			100 * keV,
-			200 * keV,
-			300 * keV,
-			400 * keV,
-			500 * keV,
-			600 * keV,
-			700 * keV,
-			800 * keV,
-			900 * keV,
-			1000 * keV,
+			//100 * keV,
+			//200 * keV,
+			//300 * keV,
+			//400 * keV,
+			//500 * keV,
+			//600 * keV,
+			//700 * keV,
+			//800 * keV,
+			//900 * keV,
+			1000 * keV/*,
 			1250 * keV,
 			1500 * keV,
 			2000 * keV,
 			3000 * keV,
 			4000 * keV,
-			5000 * keV };
+			5000 * keV*/ };
 	}
 
 	if (positionalArg.length() == 4) { // move particle source
@@ -234,7 +207,10 @@ int main(int argc, char** argv) {
 			corner.getZ() * zPositionSetting
 		};
 		OTPCgun->setPosition(particleInitialPosition);
-		additionalInfo = std::format("_{}", positionalArg);
+		additionalInfo += std::format("_{}", positionalArg);
+	}
+	else if (loadDataFromFile) {
+		additionalInfo += "_dataFile";
 	}
 
 
@@ -255,7 +231,7 @@ int main(int argc, char** argv) {
 		runDirectoryPath = resultsDirectoryPath / runDirectoryName;
 		if (std::filesystem::exists(runDirectoryPath) && skipIfDataExists) {
 			std::cout << "Data exists. Aborting simulation." << _endl_;
-			return 0; // data exist, exit program
+			return 0; // data exists, exit program
 		}
 		if (!std::filesystem::exists(runDirectoryPath) || dataOverwrite) {
 			break; // index found
@@ -265,8 +241,10 @@ int main(int argc, char** argv) {
 	OTPCdetector->saveDetails(runDirectoryPath);
 	OTPCgun->setRunPath(runDirectoryPath);
 	// iterate over energies
-	//for (auto energy : energies) {
-		//OTPCgun->setEnergy(energy); //set energy for each run
+	for (auto energy : energies) {
+		if (!loadDataFromFile) { // when loading from file dummy energy value is used once in the loop
+			OTPCgun->setEnergy(energy); //set energy for each run
+		}
 		auto partialFileName = std::format("event_{}keV_{}_",
 			OTPCgun->getEnergy() / keV,
 			paramString);
@@ -282,7 +260,7 @@ int main(int argc, char** argv) {
 			runManager->BeamOn(runEventNumber);
 			std::cout << std::format("Events finished {}/{}\n", std::min(eventCount + eventsSliceSize, numberOfEvent), numberOfEvent);
 		}
-	//}
+	}
 	auto stop = std::chrono::high_resolution_clock::now();
 	std::cout << double((stop - start).count()) / 1e9 << '\n';
 	// job termination

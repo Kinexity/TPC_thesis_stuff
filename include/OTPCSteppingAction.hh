@@ -20,6 +20,9 @@
 
 #include "G4UserSteppingAction.hh"
 #include <string>
+#include <map>
+#include <array>
+#include <tuple>
 
 class OTPCEventAction;
 

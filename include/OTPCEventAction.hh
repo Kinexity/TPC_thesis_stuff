@@ -40,6 +40,7 @@ public:
 	void addProcess(G4double x, G4double y, G4double z, G4String name);
 	void depositEnergyOnCrystal(G4int nCrystal, G4double edep);
 	void depositEnergyOnGas(G4double edep);
+	void setFlag();
 
 private:
 	OTPCRunAction* runAction;
@@ -54,6 +55,7 @@ private:
 	G4double
 		TotalEnergyDepositGas;
 	const bool includeZeroEnergy = true;
+	bool internalFlag;
 };
 
 #endif

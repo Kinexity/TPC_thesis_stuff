@@ -98,7 +98,7 @@ int main(int argc, char** argv)
 
 	// set mandatory user action class
 	OTPCPrimaryGeneratorAction*
-		OTPCgun = new OTPCPrimaryGeneratorAction(OTPCrun);
+		OTPCgun = new OTPCPrimaryGeneratorAction(OTPCrun, false);
 	OTPCgun->setRunPath(std::filesystem::current_path());
 	runManager->SetUserAction(OTPCgun);
 

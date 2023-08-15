@@ -49,7 +49,7 @@ class OTPCRunAction : public G4UserRunAction
     void fillOutGasIonization(G4double EnergyGas);
     void fillOutSteps(std::vector<std::tuple<G4double, G4double, G4double, G4String>>& ProcessSteps, G4double totalEnergy);
     
-    void updateEventCounter();
+    void updateEventCounter(bool flag);
 
     void setEventFilePath(std::filesystem::path totalP, std::filesystem::path stepsP);
 private:
@@ -68,6 +68,7 @@ private:
    
     uint32_t 
         eventIndex,
+        eventFlagCounter,
         decayCounter;
 
     std::filesystem::path 

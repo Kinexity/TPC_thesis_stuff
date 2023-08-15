@@ -22,6 +22,8 @@
 #include "G4DynamicParticle.hh"
 
 #include "G4SystemOfUnits.hh"
+#include <format>
+#include <set>
 
 OTPCSteppingAction::OTPCSteppingAction(OTPCEventAction* EvAct, const std::string& scintName) :eventAction(EvAct), scintilatorType(scintName) {}
 
@@ -32,58 +34,55 @@ inline std::string filename_string(std::string path_str) {
 #define _endl_ " (" << filename_string(__FILE__) << "; " << __LINE__ << ")" << '\n'
 #define checkpoint std::cout << "checkpoint" << _endl_
 
+std::vector<std::string>
+scintillatorProcesses = { "compt", "eBrem", "msc", "phot", "eIoni", "UserMaxStep" },
+gasProcesses = { "eIoni", "hIoni", "UserMaxStep" };
 
 void OTPCSteppingAction::UserSteppingAction(const G4Step* aStep)
 {
 
 	G4double edep = aStep->GetTotalEnergyDeposit();
 
-	G4TouchableHandle touch = aStep->GetPreStepPoint()->GetTouchableHandle();
+	G4StepPoint* prePoint = aStep->GetPreStepPoint();
+	G4StepPoint* postPoint = aStep->GetPostStepPoint();
+	G4TouchableHandle touch = prePoint->GetTouchableHandle();
 	const std::string currentMaterialName = touch->GetVolume()->GetLogicalVolume()->GetMaterial()->GetName();
-	const G4VProcess* process = aStep->GetPostStepPoint()->GetProcessDefinedStep();
+	const G4VProcess* process = postPoint->GetProcessDefinedStep();
+	std::string processName = process->GetProcessName();
+	auto track = aStep->GetTrack();
 	G4int begin;
 
-	G4String nameP = aStep->GetTrack()->GetDefinition()->GetParticleName();
-
-	std::cout << aStep->GetTrack()->GetParentID() << '\n';
+	G4String nameP = track->GetDefinition()->GetParticleName();
 
 	if (false && process) {
-	//if (edep>0.0 & currentMaterialName == "GasOTPC" & nameP=="alpha"){
-	//if (edep > 0.0 & currentMaterialName == "GasOTPC") {
-		//
-		G4StepPoint* prePoint = aStep->GetPreStepPoint();
-		G4StepPoint* postPoint = aStep->GetPostStepPoint();
+		//if (edep>0.0 & currentMaterialName == "GasOTPC" & nameP=="alpha"){
+		//if (edep > 0.0 & currentMaterialName == "GasOTPC") {
+			//
 
-		auto materialName = prePoint->GetMaterial()->GetName();
+		auto prePos = prePoint->GetPosition();
+		auto postPos = postPoint->GetPosition();
+		auto deltaPos = postPos - prePos;
+		auto pos = prePos + G4UniformRand() * deltaPos; // position randomization simplified
 
-		G4double x1 = prePoint->GetPosition().x();
-		G4double x2 = postPoint->GetPosition().x();
-		G4double y1 = prePoint->GetPosition().y();
-		G4double y2 = postPoint->GetPosition().y();
-		G4double z1 = prePoint->GetPosition().z();
-		G4double z2 = postPoint->GetPosition().z();
-
-		G4double x = x1 + G4UniformRand() * (x2 - x1);
-		G4double y = y1 + G4UniformRand() * (y2 - y1);
-		G4double z = z1 + G4UniformRand() * (z2 - z1);
-
-		auto processName = process->GetProcessName();
 
 		//eventAction->addProcess(x / mm, y / mm, z / mm, processName + '\t' + nameP);
-		eventAction->addEdep(edep / keV, x / mm, y / mm, z / mm);
+		eventAction->addEdep(edep / keV, pos.x() / mm, pos.y() / mm, pos.z() / mm);
 		//G4cout<<edep/keV<<"    "<<x/mm<<"    "<<y/mm<<"    "<<z/mm<<G4endl;
 	}
 
 	if (edep > 0.0) {
-		if (currentMaterialName == scintilatorType) {
+		if (currentMaterialName == scintilatorType && std::find(scintillatorProcesses.begin(), scintillatorProcesses.end(), processName) != scintillatorProcesses.end()) {
 			G4int nCrystal = touch->GetCopyNumber(1); //N will be the number of levels up, we have to check it to pickup the index of CeBr3 crystal
 			eventAction->depositEnergyOnCrystal(nCrystal, edep / keV);
 		}
-		else if (currentMaterialName == "GasOTPC") {
+		else if (currentMaterialName == "GasOTPC" && std::find(gasProcesses.begin(), gasProcesses.end(), processName) != gasProcesses.end()) {
 			eventAction->depositEnergyOnGas(edep / keV);
 		}
 	}
 
+	if (currentMaterialName == scintilatorType) {
+		eventAction->setFlag();
+	}
 }
 
 

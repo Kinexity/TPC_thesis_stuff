@@ -69,7 +69,7 @@ void OTPCRunAction::EndOfRunAction(const G4Run*)
 	//Stop timer and get CPU time
 	timer->Stop();
 	G4double cputime = timer->GetRealElapsed();
-	std::cout << std::format("Events with decays = {} \n CPU time = {} s\n", decayCounter, cputime);
+	std::cout << std::format("Flags set = {} \n CPU time = {} s\n", eventFlagCounter, cputime);
 
 }
 
@@ -110,7 +110,8 @@ void OTPCRunAction::fillOutSteps(std::vector<std::tuple<G4double, G4double, G4do
 	}
 }
 
-void OTPCRunAction::updateEventCounter() {
+void OTPCRunAction::updateEventCounter(bool flag) {
+	eventFlagCounter += flag;
 	eventIndex++;
 	if (eventIndex % 10000 == 0) {
 		std::cout << eventIndex << '\n';

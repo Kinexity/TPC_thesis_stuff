@@ -38,6 +38,7 @@ void OTPCEventAction::BeginOfEventAction(const G4Event*) {
 	ProcessStep.clear();
 	TotalEnergyDepositCrystal.fill(0);
 	TotalEnergyDepositGas = 0;
+	internalFlag = false;
 }
 
 void OTPCEventAction::EndOfEventAction(const G4Event* evt) {
@@ -49,7 +50,7 @@ void OTPCEventAction::EndOfEventAction(const G4Event* evt) {
 	if (includeZeroEnergy || totalEnergy > 0) {
 		runAction->fillOutScintillation(TotalEnergyDepositCrystal);
 	}
-	runAction->updateEventCounter();
+	runAction->updateEventCounter(internalFlag);
 
 }
 
@@ -59,6 +60,10 @@ void OTPCEventAction::depositEnergyOnCrystal(G4int nCrystal, G4double edep) {
 
 void OTPCEventAction::depositEnergyOnGas(G4double edep) {
 	TotalEnergyDepositGas += edep;
+}
+
+void OTPCEventAction::setFlag() {
+	internalFlag = true;
 }
 
 void OTPCEventAction::addEdep(G4double Edep, G4double x, G4double y, G4double z) {
