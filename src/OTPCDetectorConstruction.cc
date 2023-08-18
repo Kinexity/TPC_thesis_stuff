@@ -413,6 +413,44 @@ G4VPhysicalVolume* OTPCDetectorConstruction::Construct() {
 	Stesalit->AddMaterial(Na2O, 0.5 * perCent);
 	Stesalit->AddMaterial(K2O, 0.3 * perCent);
 
+	//-------------------correct Stesalit test-----------------------------
+
+
+	G4Material* diglycidylEther = new G4Material("DiglycidylEther", 1.16 * g / cm3, 3);
+	diglycidylEther->AddElement(C, 19); // C19H20O4
+	diglycidylEther->AddElement(H, 20);
+	diglycidylEther->AddElement(O, 4);
+
+	// Define 1,4-Butanediol Diglycidyl Ether
+	G4Material* butanediolEther = new G4Material("ButanediolEther", 1.10 * g / cm3, 3);
+	butanediolEther->AddElement(C, 10); // C10H18O4
+	butanediolEther->AddElement(H, 18);
+	butanediolEther->AddElement(O, 4);
+
+	// Define 1,6-Hexanediamine 2,2,4-trimethyl-
+	G4Material* hexanediamine = new G4Material("Hexanediamine", 0.865 * g / cm3, 3);
+	hexanediamine->AddElement(C, 9); // C9H22N2
+	hexanediamine->AddElement(H, 22);
+	hexanediamine->AddElement(N, 2);
+
+	// Define Epotek 301-1
+	G4Material* epotek301_1 = new G4Material("Epotek301_1", 1.19 * g / cm3, 3);
+	epotek301_1->AddMaterial(diglycidylEther, 0.8 * 70.0 * perCent);
+	epotek301_1->AddMaterial(butanediolEther, 0.8 * 30.0 * perCent);
+	epotek301_1->AddMaterial(hexanediamine, 20.0 * perCent); // 20% of Part B
+
+
+	 // Define Stesalit EP107-M950-40
+	G4Material* stesalitEP107_M950_40 = new G4Material("StesalitEP107_M950_40", 1.45 * g / cm3, 2);
+
+	stesalitEP107_M950_40->AddMaterial(Stesalit, 0.35);
+	stesalitEP107_M950_40->AddMaterial(epotek301_1, 0.65);
+
+	//-------------------correct Stesalit test end-------------------------
+
+
+
+
 	// PTFE
 	density = 2.0 * g / cm3;
 	G4Material* PTFE = new G4Material(name = "PTFE", density, ncomponents = 2);

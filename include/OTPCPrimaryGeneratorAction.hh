@@ -40,7 +40,7 @@ private:
 
 	std::fstream metaFile;
 	std::array<G4double, 3> E, theta, phi;
-	std::array<G4int, 3> type = { 5, 0, 0 };
+	std::array<G4int, 3> type = { 4, 0, 0 };
 	G4ThreeVector position = { 0 * mm, 0 * mm, 0 * mm };
 	std::array<G4ParticleDefinition*, 5> particleDefinitions;
 	const bool loadDataFromFile;
