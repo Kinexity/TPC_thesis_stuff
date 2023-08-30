@@ -59,6 +59,12 @@
 #include <numeric>
 #include "utilities.h"
 
+#include <boost/program_options.hpp>
+#include <boost/units/systems/si.hpp>
+#include <boost/units/io.hpp>
+
+namespace po = boost::program_options;
+
 int main(int argc, char** argv) {
 
 	bool
@@ -76,7 +82,10 @@ int main(int argc, char** argv) {
 		additionalInfo = "";
 	uint64_t
 		numberOfEvent = 1000000,
-		eventsSliceSize = 1000000;
+		eventsSliceSize = 1000000,
+		Z_offset = 0;
+	const uint64_t
+		Z_max_offset = 4;
 	G4ThreeVector
 		particleInitialPosition;
 
@@ -92,23 +101,33 @@ int main(int argc, char** argv) {
 		std::filesystem::create_directory(resultsDirectoryPath);
 	}
 
-	switch (argc) {
-	case 9:
-		loadDataFromFile = argv[8];
-	case 8:
-		positionalArg = argv[7];
-	case 7:
-		skipIfDataExists = std::stoi(argv[6]);
-	case 6:
-		cutValue = std::stod(argv[5]) * mm;
-	case 5:
-		physicsListName = argv[4];
-	case 4:
-		crystalDepth = std::stod(argv[3]) * cm;
-	case 3:
-		scintillatorType = argv[2];
-	case 2:
-		numberOfEvent = std::stoi(argv[1]);
+	po::options_description desc("Allowed options");
+	desc.add_options()
+		("help", "produce help message")
+		("events", po::value<uint64_t>(&numberOfEvent)->default_value(1000000), "number of events")
+		("slice", po::value<uint64_t>(&eventsSliceSize)->default_value(1000000), "event slice size")
+		("scintillator", po::value<std::string>(&scintillatorType)->default_value("CeBr3"), "scintillator type")
+		("depth", po::value<double>(&crystalDepth), "crystal depth (in cm)")
+		("physics", po::value<std::string>(&physicsListName)->default_value("emlivermore"), "physics list name")
+		("cut", po::value<double>(&cutValue), "cut value (in mm)")
+		("skip", po::value<bool>(&skipIfDataExists)->default_value(false), "skip if data exists")
+		("positional", po::value<std::string>(&positionalArg), "positional argument")
+		("load", po::value<bool>(&loadDataFromFile)->default_value(false), "load data from file")
+		("Z_off", po::value<uint64_t>(&Z_offset)->default_value(0), "particle offset in Z axis");
+
+	po::variables_map vm;
+	po::store(po::parse_command_line(argc, argv, desc), vm);
+	po::notify(vm);
+
+	if (vm.count("help")) {
+		std::cout << desc << "\n";
+		return 1;
+	}
+	if (vm.count("cut")) {
+		cutValue *= mm;
+	}
+	if (vm.count("depth")) {
+		crystalDepth *= cm;
 	}
 
 	// Choose the random engine and initialize
@@ -177,25 +196,30 @@ int main(int argc, char** argv) {
 	}
 	else {
 		energies = {
-			100 * keV,
-			200 * keV,
-			300 * keV,
-			400 * keV,
-			500 * keV,
-			600 * keV,
-			700 * keV,
-			800 * keV,
-			900 * keV,
-			1000 * keV,
-			1250 * keV,
-			1500 * keV,
-			2000 * keV,
-			3000 * keV,
-			4000 * keV,
+			//100 * keV,
+			//200 * keV,
+			//300 * keV,
+			//400 * keV,
+			//500 * keV,
+			//600 * keV,
+			//700 * keV,
+			//800 * keV,
+			//900 * keV,
+			//1000 * keV,
+			//1250 * keV,
+			//1500 * keV,
+			//2000 * keV,
+			//3000 * keV,
+			//4000 * keV,
 			5000 * keV };
 	}
 
-	if (positionalArg.length() == 4) { // move particle source
+	if (vm.count("positional") && vm.count("Z_off")) {
+		std::cout << "--positional and --Z_off are mutually exclusive arguments\n";
+		return 1;
+	}
+
+	if (vm.count("positional")) { // move particle source
 		int
 			xPositionSetting = std::stoi(positionalArg.substr(0, 2)),
 			yPositionSetting = std::stoi(positionalArg.substr(2, 1)),
@@ -209,10 +233,26 @@ int main(int argc, char** argv) {
 		OTPCgun->setPosition(particleInitialPosition);
 		additionalInfo += std::format("_{}", positionalArg);
 	}
-	else if (loadDataFromFile) {
+	else if (vm.count("Z_off")) {
+		if (Z_offset > Z_max_offset) {
+			std::cout << std::format("Z offset too high");
+			return 1;
+		}
+		auto corner = OTPCdetector->getChamberCorner();
+		particleInitialPosition = {
+			0,
+			0,
+			corner.getZ() * Z_offset / Z_max_offset
+		};
+		OTPCgun->setPosition(particleInitialPosition);
+		additionalInfo += std::format("_Z{}({})", Z_offset, Z_max_offset);
+	}
+
+	if (loadDataFromFile) {
 		additionalInfo += "_dataFile";
 	}
 
+	checkpoint;
 
 	G4String pname = "gamma";
 	std::string runDirectoryName;
@@ -223,6 +263,9 @@ int main(int argc, char** argv) {
 		OTPCphysList->getPhysicsListName(),
 		OTPCphysList->GetCutValue(pname) / mm,
 		additionalInfo);
+
+	checkpoint;
+
 	// find first available simulation index
 	for (int i = 0;; i++) {
 		runDirectoryName = std::format("event_{}_{}",
@@ -240,6 +283,8 @@ int main(int argc, char** argv) {
 	std::filesystem::create_directory(runDirectoryPath);
 	OTPCdetector->saveDetails(runDirectoryPath);
 	OTPCgun->setRunPath(runDirectoryPath);
+
+	checkpoint;
 	// iterate over energies
 	for (auto energy : energies) {
 		if (!loadDataFromFile) { // when loading from file dummy energy value is used once in the loop

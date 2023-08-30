@@ -15,11 +15,14 @@ else()
   find_package(Geant4 REQUIRED)
 endif()
 
+find_package(Boost REQUIRED COMPONENTS program_options)
+
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project
 #
 include(${Geant4_USE_FILE})
+include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 #----------------------------------------------------------------------------
@@ -33,9 +36,9 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(OTPC OTPC.cc ${sources} ${headers})
-target_link_libraries(OTPC ${Geant4_LIBRARIES})
+target_link_libraries(OTPC ${Geant4_LIBRARIES} ${Boost_LIBRARIES})
 add_executable(OTPC_manual OTPC_manual.cc ${sources} ${headers})
-target_link_libraries(OTPC_manual ${Geant4_LIBRARIES})
+target_link_libraries(OTPC_manual ${Geant4_LIBRARIES} ${Boost_LIBRARIES})
 
 
 

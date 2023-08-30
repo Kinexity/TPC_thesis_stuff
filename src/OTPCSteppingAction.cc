@@ -27,6 +27,12 @@
 
 OTPCSteppingAction::OTPCSteppingAction(OTPCEventAction* EvAct, const std::string& scintName) :eventAction(EvAct), scintilatorType(scintName) {}
 
+OTPCSteppingAction::~OTPCSteppingAction() {
+	for (auto [p, c] : dcs) {
+		std::cout << std::format("{}\t{}\n", p, c);
+	}
+}
+
 inline std::string filename_string(std::string path_str) {
 	return path_str.substr(path_str.rfind("\\") + 1, path_str.size() - path_str.rfind("\\") - 1);
 };
@@ -80,8 +86,16 @@ void OTPCSteppingAction::UserSteppingAction(const G4Step* aStep)
 		}
 	}
 
-	if (currentMaterialName == scintilatorType) {
-		eventAction->setFlag();
+	//if (currentMaterialName == scintilatorType) {
+	if (processName == "RadioactiveDecay") {
+		//std::cout << nameP << '\n';
+		if (track->GetParentID() != 0) {
+
+			dcs[nameP]++;
+			if (nameP == "La138") {
+				eventAction->setFlag();
+			}
+		}
 	}
 }
 

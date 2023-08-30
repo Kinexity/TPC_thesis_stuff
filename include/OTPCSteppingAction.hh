@@ -30,11 +30,12 @@ class OTPCSteppingAction : public G4UserSteppingAction
 {
 public:
 	OTPCSteppingAction(OTPCEventAction*, const std::string& scintName);
-	~OTPCSteppingAction() = default;
+	~OTPCSteppingAction();
 
 	void UserSteppingAction(const G4Step*);
 
 private:
+	std::map<std::string, int> dcs;
 	const std::string& scintilatorType;
 	OTPCEventAction* eventAction;
 };
