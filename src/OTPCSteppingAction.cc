@@ -87,7 +87,7 @@ void OTPCSteppingAction::UserSteppingAction(const G4Step* aStep)
 	}
 
 	//if (currentMaterialName == scintilatorType) {
-	if (processName == "RadioactiveDecay") {
+	if (false && processName == "RadioactiveDecay") {
 		//std::cout << nameP << '\n';
 		if (track->GetParentID() != 0) {
 

@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 
 	// set mandatory initialization classes
 	runManager->SetUserInitialization(new OTPCDetectorConstruction);
-	runManager->SetUserInitialization(new OTPCPhysicsList);
+	runManager->SetUserInitialization(new OTPCPhysicsList("empenelope"));
 
 
 	std::string scint = "CeBr3";

@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
 		("skip", po::value<bool>(&skipIfDataExists)->default_value(false), "skip if data exists")
 		("positional", po::value<std::string>(&positionalArg), "positional argument")
 		("load", po::value<bool>(&loadDataFromFile)->default_value(false), "load data from file")
-		("Z_off", po::value<uint64_t>(&Z_offset)->default_value(0), "particle offset in Z axis");
+		("Z_off", po::value<uint64_t>(&Z_offset), "particle offset in Z axis");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -196,21 +196,21 @@ int main(int argc, char** argv) {
 	}
 	else {
 		energies = {
-			//100 * keV,
-			//200 * keV,
-			//300 * keV,
-			//400 * keV,
-			//500 * keV,
-			//600 * keV,
-			//700 * keV,
-			//800 * keV,
-			//900 * keV,
-			//1000 * keV,
-			//1250 * keV,
-			//1500 * keV,
-			//2000 * keV,
-			//3000 * keV,
-			//4000 * keV,
+			100 * keV,
+			200 * keV,
+			300 * keV,
+			400 * keV,
+			500 * keV,
+			600 * keV,
+			700 * keV,
+			800 * keV,
+			900 * keV,
+			1000 * keV,
+			1250 * keV,
+			1500 * keV,
+			2000 * keV,
+			3000 * keV,
+			4000 * keV,
 			5000 * keV };
 	}
 
@@ -233,7 +233,9 @@ int main(int argc, char** argv) {
 		OTPCgun->setPosition(particleInitialPosition);
 		additionalInfo += std::format("_{}", positionalArg);
 	}
-	else if (vm.count("Z_off")) {
+	
+	if (vm.count("Z_off")) {
+		system("pause");
 		if (Z_offset > Z_max_offset) {
 			std::cout << std::format("Z offset too high");
 			return 1;

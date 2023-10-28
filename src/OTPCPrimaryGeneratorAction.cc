@@ -168,9 +168,9 @@ void OTPCPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		phi[i] = CLHEP::twopi * G4UniformRand();
 	}
 
-	//if (loadDataFromFile) {
-	//	E[1] = generateRandomEnergy();
-	//}
+	if (loadDataFromFile) {
+		E[1] = generateRandomEnergy();
+	}
 
 	std::array tpl = { E[0] / keV, E[1] / keV, E[2] / keV, position.x() / mm, position.y() / mm, position.z() / mm, theta[0] / degree, theta[1] / degree, theta[3] / degree, phi[0] / degree, phi[1] / degree, phi[2] / degree };
 	metaFile.write((char*)tpl.data(), sizeof(tpl));
